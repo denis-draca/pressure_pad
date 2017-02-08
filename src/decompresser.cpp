@@ -56,7 +56,13 @@ double DECOMPRESSER::pad_force(std::vector<uchar> &reading, bool left)
 
     for(int i = 0; i < aligned.size(); i++)
     {
-        std::thread t(&DECOMPRESSER::resistor_convert, this, std::ref(all_ones), std::ref(aligned[i]), std::ref(R), std::ref(resistor_map), left);
+        std::thread t(&DECOMPRESSER::resistor_convert, this,
+                      std::ref(all_ones), //list of ones
+                      std::ref(aligned[i]), //aligned reading vector of vectors
+                      std::ref(R), //Constant
+                      std::ref(resistor_map), //changed by reference, new multiarray containing the resistor values instead of ADC
+                      left); //true if the reading comes from the left pad
+
         thread_container.push_back(std::move(t));
     }
 
@@ -79,7 +85,8 @@ double DECOMPRESSER::pad_force(std::vector<uchar> &reading, bool left)
     }
 }
 
-void DECOMPRESSER::resistor_convert(Eigen::MatrixXd &all_ones, std::vector<double> &aligned, Eigen::MatrixXd &R, std::vector< std::vector<double> > &resistor_map, bool left)
+void DECOMPRESSER::resistor_convert(Eigen::MatrixXd &all_ones, std::vector<double> &aligned, Eigen::MatrixXd &R,
+                                    std::vector< std::vector<double> > &resistor_map, bool left)
 {
 
     Eigen::MatrixXd k_values = k_creator(std::ref(all_ones), std::ref(aligned));
