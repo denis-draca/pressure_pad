@@ -406,12 +406,17 @@ void DECOMPRESSER::left_reader()
             con.wait(lk);
         }
 
+        if(!ros::ok())
+        {
+            break;
+        }
+
         new_data_left = false;
 
         if(buf.left_readings.size() != 0)
         {
-            data = buf.left_readings.back();
-            buf.left_readings.resize(buf.left_readings.size() - 1);
+            data = buf.left_readings.front();
+            buf.left_readings.clear();
         }
 
         lk.unlock();
@@ -439,12 +444,17 @@ void DECOMPRESSER::right_reader()
             con_r.wait(lk);
         }
 
+        if(!ros::ok())
+        {
+            break;
+        }
+
         new_data_right = false;
 
         if(buf.right_readings.size() != 0)
         {
-            data = buf.right_readings.back();
-            buf.right_readings.resize(buf.right_readings.size() - 1);
+            data = buf.right_readings.front();
+            buf.right_readings.clear();
         }
 
         lk.unlock();
