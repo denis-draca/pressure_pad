@@ -9,15 +9,20 @@ int main(int argc, char **argv)
     std::shared_ptr<DECOMPRESSER> gc(new DECOMPRESSER (n));
     std::thread left(&DECOMPRESSER::left_reader ,gc);
     std::thread right(&DECOMPRESSER::right_reader ,gc);
+    std::thread left_rivets(&DECOMPRESSER::left_rivet_detector ,gc);
+    std::thread right_rivets(&DECOMPRESSER::right_rivet_detector ,gc);
 
     ros::spin();
 
     ros::shutdown();
 
-    std::thread t2(&DECOMPRESSER::wake_con ,gc);
+    gc->wake_con();
+
     left.join();
     right.join();
-    t2.join();
+    left_rivets.join();
+    right_rivets.join();
+
 
 
     return 0;

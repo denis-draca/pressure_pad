@@ -5,9 +5,11 @@
 #include "sensor_msgs/Image.h"
 #include "std_msgs/Int8MultiArray.h"
 #include "std_msgs/Float32.h"
+#include "std_msgs/String.h"
 
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
+#include "opencv2/opencv.hpp"
 
 #include "image_transport/image_transport.h"
 #include "cv_bridge/cv_bridge.h"
@@ -30,11 +32,18 @@ private:
     std::mutex left_mx;
     std::mutex right_mx;
 
+    std::mutex mx_left_image;
+    std::mutex mx_right_image;
+
     std::condition_variable con;
     std::condition_variable con_r;
+    std::condition_variable con_left_image;
+    std::condition_variable con_right_image;
 
     bool new_data_left = false;
     bool new_data_right = false;
+    bool new_image_left = false;
+    bool new_image_right = false;
 
     struct buffer{
         std::vector < std::vector<uchar> > left_readings;
@@ -52,6 +61,8 @@ private:
 
     ros::Publisher left_force_;
     ros::Publisher right_force_;
+    ros::Publisher left_safe_;
+    ros::Publisher right_safe_;
 
     image_transport::ImageTransport it_;
 
@@ -69,13 +80,25 @@ private:
 
     double constant_R;
 
+    struct image_buffer
+    {
+        std::vector<cv::Mat> left_images;
+        std::vector<cv::Mat> right_images;
+    };
+
+    image_buffer img_buf;
+
 private:
     double pad_force(std::vector<uchar> &reading, bool left);
     void resistor_convert(Eigen::MatrixXd &all_ones, std::vector<double> &aligned, Eigen::MatrixXd &R, std::vector< std::vector<double> > &resistor_map, bool left);
+
     void left_scan(const std_msgs::Int8MultiArrayConstPtr &input);
     void right_scan(const std_msgs::Int8MultiArrayConstPtr &input);
 
+
     int find_max(std::vector<uchar> &v);
+
+    bool is_safe(cv::Mat &image, bool is_left);
 
     std::vector<std::vector<double> > make_aligned(std::vector<uchar> &reading);
     std::vector<double> resistor_row(Eigen::MatrixXd &result);
@@ -94,8 +117,12 @@ private:
 public:
     void wake_con();
     DECOMPRESSER(ros::NodeHandle &n);
+
     void left_reader();
     void right_reader();
+
+    void left_rivet_detector();
+    void right_rivet_detector();
 };
 
 #endif // DECOMPRESSER_H
