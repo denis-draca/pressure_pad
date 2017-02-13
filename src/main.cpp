@@ -7,6 +7,7 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
 
     std::shared_ptr<DECOMPRESSER> gc(new DECOMPRESSER (n));
+
     std::thread left(&DECOMPRESSER::left_reader ,gc);
     std::thread right(&DECOMPRESSER::right_reader ,gc);
     std::thread left_rivets(&DECOMPRESSER::left_rivet_detector ,gc);

@@ -95,21 +95,17 @@ private:
     void left_scan(const std_msgs::Int8MultiArrayConstPtr &input);
     void right_scan(const std_msgs::Int8MultiArrayConstPtr &input);
 
-
     int find_max(std::vector<uchar> &v);
 
     bool is_safe(cv::Mat &image, bool is_left);
-
-    std::vector<std::vector<double> > make_aligned(std::vector<uchar> &reading);
-    std::vector<double> resistor_row(Eigen::MatrixXd &result);
 
     double calc_force(std::vector<std::vector<double> > map);
 
     Eigen::MatrixXd constant_16by16(int value);
     Eigen::MatrixXd k_creator(Eigen::MatrixXd &ones, std::vector<double> &row);
 
-
-
+    std::vector<std::vector<double> > make_aligned(std::vector<uchar> &reading);
+    std::vector<double> resistor_row(Eigen::MatrixXd &result);
 
 private:
     DECOMPRESSER();
