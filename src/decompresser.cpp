@@ -26,87 +26,6 @@ DECOMPRESSER::DECOMPRESSER(ros::NodeHandle &n):
     sub_right_= n_.subscribe("/wallpusher/raw_scan/right", 1, &DECOMPRESSER::right_scan, this);
 }
 
-void DECOMPRESSER::wake_con()
-{
-    con.notify_all();
-    con_r.notify_all();
-    con_left_image.notify_all();
-    con_right_image.notify_all();
-}
-
-
-
-double DECOMPRESSER::pad_force(std::vector<uchar> &reading, bool left)
-{
-    std::vector<std::thread> thread_container;
-
-    Eigen::MatrixXd R(16,1);
-
-    for(int i = 0; i < 16; i++)
-    {
-        R(i,0) = (1.0/5000.0) * -1;
-    }
-
-    Eigen::MatrixXd all_ones = constant_16by16(1);
-
-    bool broke = false;
-
-    std::vector < std::vector<double> > aligned = make_aligned(reading);
-    std::vector < std::vector<double> > resistor_map;
-
-    for(int i = 0; i < aligned.size(); i++)
-    {
-        std::thread t(&DECOMPRESSER::resistor_convert, this,
-                      std::ref(all_ones), //list of ones
-                      std::ref(aligned[i]), //aligned reading vector of vectors
-                      std::ref(R), //Constant
-                      std::ref(resistor_map), //changed by reference, new multiarray containing the resistor values instead of ADC
-                      left); //true if the reading comes from the left pad
-
-        thread_container.push_back(std::move(t));
-    }
-
-    for(int i = 0; i < thread_container.size(); i++)
-    {
-        thread_container[i].join();
-    }
-
-    if(left)
-    {
-        double total_force = calc_force(resistor_map);
-        std::cout << "\033[1;31m\nFront left Force: \033[0m" << total_force/9.81 <<std::endl;
-        return total_force;
-    }
-    else
-    {
-        double total_force = calc_force(resistor_map);
-        std::cout << "\033[1;31m\nFront Right Force: \033[0m" << total_force/9.81 << std::endl;
-        return total_force;
-    }
-}
-
-void DECOMPRESSER::resistor_convert(Eigen::MatrixXd &all_ones, std::vector<double> &aligned, Eigen::MatrixXd &R,
-                                    std::vector< std::vector<double> > &resistor_map, bool left)
-{
-
-    Eigen::MatrixXd k_values = k_creator(std::ref(all_ones), std::ref(aligned));
-
-    Eigen::MatrixXd resistors =  k_values.fullPivLu().solve(R);
-
-    if(left)
-    {
-        mx_left.lock();
-        resistor_map.push_back(resistor_row(resistors));
-        mx_left.unlock();
-    }
-    else
-    {
-        mx_right.lock();
-        resistor_map.push_back(resistor_row(resistors));
-        mx_right.unlock();
-    }
-}
-
 /***********************************************************************
  ********************            ***************************************
  ******************** LEFT SCAN  ***************************************
@@ -353,6 +272,85 @@ void DECOMPRESSER::right_scan(const std_msgs::Int8MultiArrayConstPtr &input)
     cv::waitKey(3);
 }
 
+void DECOMPRESSER::wake_con()
+{
+    con.notify_all();
+    con_r.notify_all();
+    con_left_image.notify_all();
+    con_right_image.notify_all();
+}
+
+double DECOMPRESSER::pad_force(std::vector<uchar> &reading, bool left)
+{
+    std::vector<std::thread> thread_container;
+
+    Eigen::MatrixXd R(16,1);
+
+    for(int i = 0; i < 16; i++)
+    {
+        R(i,0) = (1.0/5000.0) * -1;
+    }
+
+    Eigen::MatrixXd all_ones = constant_16by16(1);
+
+    bool broke = false;
+
+    std::vector < std::vector<double> > aligned = make_aligned(reading);
+    std::vector < std::vector<double> > resistor_map;
+
+    for(int i = 0; i < aligned.size(); i++)
+    {
+        std::thread t(&DECOMPRESSER::resistor_convert, this,
+                      std::ref(all_ones), //list of ones
+                      std::ref(aligned[i]), //row from aligned reading vector of vectors
+                      std::ref(R), //Constant
+                      std::ref(resistor_map), //changed by reference, new multiarray containing the resistor values instead of ADC
+                      left); //true if the reading comes from the left pad
+
+        thread_container.push_back(std::move(t));
+    }
+
+    for(int i = 0; i < thread_container.size(); i++)
+    {
+        thread_container[i].join();
+    }
+
+    if(left)
+    {
+        double total_force = calc_force(resistor_map);
+        std::cout << "\033[1;31m\nFront left Force: \033[0m" << total_force/9.81 <<std::endl;
+        return total_force;
+    }
+    else
+    {
+        double total_force = calc_force(resistor_map);
+        std::cout << "\033[1;31m\nFront Right Force: \033[0m" << total_force/9.81 << std::endl;
+        return total_force;
+    }
+}
+
+void DECOMPRESSER::resistor_convert(Eigen::MatrixXd &all_ones, std::vector<double> &aligned, Eigen::MatrixXd &R,
+                                    std::vector< std::vector<double> > &resistor_map, bool left)
+{
+    Eigen::MatrixXd k_values = k_creator(std::ref(all_ones), std::ref(aligned));
+
+    Eigen::MatrixXd resistors =  k_values.fullPivLu().solve(R);
+
+    if(left)
+    {
+        mx_left.lock();
+        resistor_map.push_back(resistor_row(resistors));
+        mx_left.unlock();
+    }
+    else
+    {
+        mx_right.lock();
+        resistor_map.push_back(resistor_row(resistors));
+        mx_right.unlock();
+    }
+}
+
+
 std::vector<std::vector<double> > DECOMPRESSER::make_aligned(std::vector<uchar> &reading)
 {
     std::vector< std::vector<double> > aligned;
@@ -414,8 +412,6 @@ void DECOMPRESSER::left_reader()
     std_msgs::Float32 force_send;
     std::vector<uchar> data;
 
-    std_msgs::String str;
-
     while(ros::ok())
     {
         std::unique_lock<std::mutex> lk(left_mx);
@@ -442,16 +438,7 @@ void DECOMPRESSER::left_reader()
 
         double force = pad_force(data, true);
 
-        if(force >= 1200)
-        {
-            str.data = "SAFE";
-            left_safe_.publish(str);
-        }
-        else
-        {
-            str.data = "NOT SAFE";
-            left_safe_.publish(str);
-        }
+        forces_left.push_back(force);
 
         force_send.data = force;
 
@@ -465,8 +452,6 @@ void DECOMPRESSER::right_reader()
 {
     std_msgs::Float32 force_send;
     std::vector<uchar> data;
-
-    std_msgs::String str;
 
     while(ros::ok())
     {
@@ -494,16 +479,7 @@ void DECOMPRESSER::right_reader()
 
         double force = pad_force(data, false);
 
-        if(force >= 1200)
-        {
-            str.data = "SAFE";
-            right_safe_.publish(str);
-        }
-        else
-        {
-            str.data = "NOT SAFE";
-            right_safe_.publish(str);
-        }
+        forces_right.push_back(force);
 
         force_send.data = force;
 
@@ -515,7 +491,7 @@ void DECOMPRESSER::right_reader()
 
 void DECOMPRESSER::left_rivet_detector()
 {
-    char name[] = "left_detected";
+    std_msgs::String str;
     while(ros::ok())
     {
         cv::Mat image;
@@ -548,11 +524,13 @@ void DECOMPRESSER::left_rivet_detector()
 
         if(is_safe(image, true))
         {
-            std::cout << "is safe" << std::endl;
+            str.data = "SAFE";
+            left_safe_.publish(str);
         }
         else
         {
-            std::cout << "Not safe" << std::endl;
+            str.data = "NOT_SAFE";
+            left_safe_.publish(str);
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -561,7 +539,7 @@ void DECOMPRESSER::left_rivet_detector()
 
 void DECOMPRESSER::right_rivet_detector()
 {
-    char name[] = "right_detected";
+    std_msgs::String str;
     while(ros::ok())
     {
         cv::Mat image;
@@ -594,11 +572,13 @@ void DECOMPRESSER::right_rivet_detector()
 
         if(is_safe(image, false))
         {
-            std::cout << "is safe" << std::endl;
+            str.data = "SAFE";
+            right_safe_.publish(str);
         }
         else
         {
-            std::cout << "Not safe" << std::endl;
+            str.data = "NOT_SAFE";
+            right_safe_.publish(str);
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -646,7 +626,9 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left)
         }
     }
 
-    cv::drawKeypoints( im_with_keypoints, keypoints, im_with_keypoints, cv::Scalar(0,0,255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+    cv::drawKeypoints( im_with_keypoints, keypoints, im_with_keypoints,
+                       cv::Scalar(0,0,255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+
     sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", im_with_keypoints).toImageMsg();
 
     if(is_left)
@@ -661,19 +643,90 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left)
     if(z >= 130 || z <= 6)
     {
         std::cout << "FLAT SURFACE \n";
-        return true;
-    }
-    else
-    {
-        std::cout << "SURFACE WITH RIVETS\n" << z;
 
-        if(keypoints.size() >= 3)
+        double force;
+
+        while(forces_left.size() == 0 && is_left)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+
+        while(forces_right.size() == 0 && !is_left)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+
+        if(is_left)
+        {
+            force = forces_left.back()/3.0;
+        }
+        else
+        {
+            force = forces_right.back()/3.0;
+        }
+
+        if(force >= 1300)
         {
             return true;
         }
         else
-        {
             return false;
+    }
+    else
+    {
+        std::cout << "SURFACE WITH RIVETS: " << z << std::endl;
+
+        if(keypoints.size() != 0)
+        {
+            double force;
+            while(forces_left.size() == 0 && is_left)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
+
+            while(forces_right.size() == 0 && !is_left)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
+
+            if(is_left)
+            {
+                force = forces_left.back()/keypoints.size();
+            }
+            else
+            {
+                force = forces_right.back()/keypoints.size();
+            }
+
+            std::vector<double> moments;
+
+            for(int i = 0; i < keypoints.size(); i++)
+            {
+                double moment_run = 0;
+                for(int x = 0; x < keypoints.size(); x++)
+                {
+                    if(x != i)
+                    moment_run += force*sqrt(pow(((keypoints[x].pt.x - keypoints[i].pt.x))*X_RATIO, 2) +
+                                             pow(((keypoints[x].pt.y - keypoints[i].pt.y))*Y_RATIO, 2));
+                }
+
+                moments.push_back(moment_run);
+            }
+
+            double average_moment = 0;
+            for(int i = 0; i < moments.size(); i++)
+            {
+                average_moment += moments.at(i);
+            }
+
+            average_moment = average_moment/moments.size();
+
+            std::cout << "AVG_MOMENT: " << average_moment << std::endl;
+
+            if(average_moment >= DEFINED_MOMENT)
+                return true;
+            else
+                return false;
         }
     }
 }
@@ -690,20 +743,4 @@ Eigen::MatrixXd DECOMPRESSER::constant_16by16(int value)
     }
 
     return cells;
-}
-
-int DECOMPRESSER::find_max(std::vector<uchar> &v)
-{
-    int max_value = v.front();
-
-    for(int i = 0; i < v.size(); i++)
-    {
-
-        if (v.at(i) > max_value)
-        {
-            max_value = v.at(i);
-        }
-    }
-
-    return max_value;
 }
