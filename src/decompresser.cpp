@@ -13,14 +13,8 @@ DECOMPRESSER::DECOMPRESSER(ros::NodeHandle &n):
 {
     constant_R = 1.0/5000.0;
 
-    pub_left_ = it_.advertise("/wallpusher/decompressed/left",1);
-    pub_right_= it_.advertise("/wallpusher/decompressed/right",1);
-
-    left_safe_ = n_.advertise<std_msgs::String>("/wallpusher/safe_force/left", 1);
-    right_safe_ = n_.advertise<std_msgs::String>("/wallpusher/safe_force/right", 1);
-
-    left_force_ = n_.advertise<std_msgs::Float32>("/wallpusher/force/left", 1);
-    right_force_ = n_.advertise<std_msgs::Float32>("/wallpusher/force/right", 1);
+    pub_left_ = n_.advertise<pressure_pad::pressure_read>("/wallpusher/reading/left",1);
+    pub_right_= n_.advertise<pressure_pad::pressure_read>("/wallpusher/reading/right",1);
 
     sub_left_ = n_.subscribe("/wallpusher/raw_scan/left", 1, &DECOMPRESSER::left_scan, this);
     sub_right_= n_.subscribe("/wallpusher/raw_scan/right", 1, &DECOMPRESSER::right_scan, this);
@@ -409,7 +403,6 @@ Eigen::MatrixXd DECOMPRESSER::k_creator(Eigen::MatrixXd &ones, std::vector<doubl
 
 void DECOMPRESSER::left_reader()
 {
-    std_msgs::Float32 force_send;
     std::vector<uchar> data;
 
     while(ros::ok())
@@ -440,17 +433,12 @@ void DECOMPRESSER::left_reader()
 
         forces_left.push_back(force);
 
-        force_send.data = force;
-
-        left_force_.publish(force_send);
-
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
 void DECOMPRESSER::right_reader()
 {
-    std_msgs::Float32 force_send;
     std::vector<uchar> data;
 
     while(ros::ok())
@@ -481,17 +469,13 @@ void DECOMPRESSER::right_reader()
 
         forces_right.push_back(force);
 
-        force_send.data = force;
-
-        right_force_.publish(force_send);
-
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
 void DECOMPRESSER::left_rivet_detector()
 {
-    std_msgs::String str;
+    pressure_pad::pressure_read left_read;
     while(ros::ok())
     {
         cv::Mat image;
@@ -522,15 +506,17 @@ void DECOMPRESSER::left_rivet_detector()
 
         lk.unlock();
 
-        if(is_safe(image, true))
+        if(is_safe(image, true, left_read))
         {
-            str.data = "SAFE";
-            left_safe_.publish(str);
+            left_read.header.stamp = ros::Time::now();
+            left_read.safe = true;
+            pub_left_.publish(left_read);
         }
         else
         {
-            str.data = "NOT_SAFE";
-            left_safe_.publish(str);
+            left_read.header.stamp = ros::Time::now();
+            left_read.safe = false;
+            pub_left_.publish(left_read);
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -539,7 +525,7 @@ void DECOMPRESSER::left_rivet_detector()
 
 void DECOMPRESSER::right_rivet_detector()
 {
-    std_msgs::String str;
+    pressure_pad::pressure_read right_read;
     while(ros::ok())
     {
         cv::Mat image;
@@ -570,22 +556,24 @@ void DECOMPRESSER::right_rivet_detector()
 
         lk.unlock();
 
-        if(is_safe(image, false))
+        if(is_safe(image, false, right_read))
         {
-            str.data = "SAFE";
-            right_safe_.publish(str);
+            right_read.header.stamp = ros::Time::now();
+            right_read.safe = true;
+            pub_right_.publish(right_read);
         }
         else
         {
-            str.data = "NOT_SAFE";
-            right_safe_.publish(str);
+            right_read.header.stamp = ros::Time::now();
+            right_read.safe = false;
+            pub_right_.publish(right_read);
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
-bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left)
+bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_read &message)
 {
     cv::Mat binary_image;
     cv::Mat binary_image_test;
@@ -626,19 +614,19 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left)
         }
     }
 
-    cv::drawKeypoints( im_with_keypoints, keypoints, im_with_keypoints,
-                       cv::Scalar(0,0,255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+//    cv::drawKeypoints( im_with_keypoints, keypoints, im_with_keypoints,
+//                       cv::Scalar(0,0,255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
-    sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", im_with_keypoints).toImageMsg();
+//    sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", im_with_keypoints).toImageMsg();
 
-    if(is_left)
-    {
-        pub_left_.publish(msg);
-    }
-    else
-    {
-        pub_right_.publish(msg);
-    }
+//    if(is_left)
+//    {
+//        pub_left_.publish(msg);
+//    }
+//    else
+//    {
+//        pub_right_.publish(msg);
+//    }
 
     if(z >= 130 || z <= 6)
     {
@@ -665,6 +653,10 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left)
             force = forces_right.back()/3.0;
         }
 
+        message.pad_force = force;
+        message.is_flat = true;
+        message.rivet_count = 0;
+
         if(force >= 1300)
         {
             return true;
@@ -678,6 +670,17 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left)
 
         if(keypoints.size() != 0)
         {
+
+            for(int i = 0; i < keypoints.size(); i++)
+            {
+                geometry_msgs::Point pt;
+                pt.x = keypoints[i].pt.x;
+                pt.y = keypoints[i].pt.y;
+                pt.z = 0;
+
+                message.rivet_pos.push_back(pt);
+            }
+
             double force;
             while(forces_left.size() == 0 && is_left)
             {
@@ -697,6 +700,8 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left)
             {
                 force = forces_right.back()/keypoints.size();
             }
+
+            message.pad_force = force;
 
             std::vector<double> moments;
 
@@ -722,6 +727,9 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left)
             average_moment = average_moment/moments.size();
 
             std::cout << "AVG_MOMENT: " << average_moment << std::endl;
+
+            message.is_flat = false;
+            message.rivet_count = keypoints.size();
 
             if(average_moment >= DEFINED_MOMENT)
                 return true;

@@ -51,5 +51,4 @@ add_executable(pad_scan
 )
 
 target_link_libraries(pad_scan ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CMAKE_THREAD_LIBS_INIT})
-add_dependencies(pad_scan ${catkin_EXPORTED_TARGETS})
 add_definitions(-std=c++11)

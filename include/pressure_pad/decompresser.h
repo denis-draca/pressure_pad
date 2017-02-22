@@ -4,8 +4,6 @@
 #include "ros/ros.h"
 #include "sensor_msgs/Image.h"
 #include "std_msgs/Int8MultiArray.h"
-#include "std_msgs/Float32.h"
-#include "std_msgs/String.h"
 
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -22,6 +20,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <pressure_pad/pressure_read.h>
 
 #define DEFINED_MOMENT 500
 #define X_RATIO 6.5/1000
@@ -61,13 +60,8 @@ private:
     ros::NodeHandle n_;
 
     //Publishers
-    image_transport::Publisher pub_left_;
-    image_transport::Publisher pub_right_;
-
-    ros::Publisher left_force_;
-    ros::Publisher right_force_;
-    ros::Publisher left_safe_;
-    ros::Publisher right_safe_;
+    ros::Publisher pub_left_;
+    ros::Publisher pub_right_;
 
     image_transport::ImageTransport it_;
 
@@ -108,7 +102,7 @@ private:
     void left_scan(const std_msgs::Int8MultiArrayConstPtr &input);
     void right_scan(const std_msgs::Int8MultiArrayConstPtr &input);
 
-    bool is_safe(cv::Mat &image, bool is_left);
+    bool is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_read &message);
 
     double calc_force(std::vector<std::vector<double> > map);
 

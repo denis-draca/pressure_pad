@@ -1,4 +1,3 @@
-//#include "ros/ros.h"
 #include "pressure_pad/decompresser.h"
 
 int main(int argc, char **argv)
