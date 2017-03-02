@@ -11,8 +11,6 @@
 DECOMPRESSER::DECOMPRESSER(ros::NodeHandle &n):
     n_(n), it_(n)
 {
-    constant_R = 1.0/5000.0;
-
     pub_left_ = n_.advertise<pressure_pad::pressure_read>("/wallpusher/reading/left",1);
     pub_right_= n_.advertise<pressure_pad::pressure_read>("/wallpusher/reading/right",1);
 
@@ -287,134 +285,10 @@ void DECOMPRESSER::wake_con()
     con_right_image.notify_all();
 }
 
-double DECOMPRESSER::pad_force(std::vector<uchar> &reading, bool left)
-{
-    std::vector<std::thread> thread_container;
-
-    Eigen::MatrixXd R(COLUMNS,1);
-
-    for(int i = 0; i < COLUMNS; i++)
-    {
-        R(i,0) = (constant_R) * -1;
-    }
-
-    Eigen::MatrixXd all_ones = constant_16by16(1);
-
-    std::vector < std::vector<double> > aligned = make_aligned(reading);
-    std::vector < std::vector<double> > resistor_map;
-
-    for(int i = 0; i < aligned.size(); i++)
-    {
-        std::thread t(&DECOMPRESSER::resistor_convert, this,
-                      std::ref(all_ones), //list of ones
-                      std::ref(aligned[i]), //row from aligned reading vector of vectors
-                      std::ref(R), //Constant
-                      std::ref(resistor_map), //changed by reference, new multiarray containing the resistor values instead of ADC
-                      left); //true if the reading comes from the left pad
-
-        thread_container.push_back(std::move(t));
-    }
-
-    for(int i = 0; i < thread_container.size(); i++)
-    {
-        thread_container[i].join();
-    }
-
-    if(left)
-    {
-        double total_force = calc_force(resistor_map);
-        std::cout << "\033[1;31m\nFront left Force: \033[0m" << total_force/9.81 <<std::endl;
-        return total_force;
-    }
-    else
-    {
-        double total_force = calc_force(resistor_map);
-        std::cout << "\033[1;31m\nFront Right Force: \033[0m" << total_force/9.81 << std::endl;
-        return total_force;
-    }
-}
-
-void DECOMPRESSER::resistor_convert(Eigen::MatrixXd &all_ones, std::vector<double> &aligned, Eigen::MatrixXd &R,
-                                    std::vector< std::vector<double> > &resistor_map, bool left)
-{
-    Eigen::MatrixXd k_values = k_creator(std::ref(all_ones), std::ref(aligned));
-
-    Eigen::MatrixXd resistors =  k_values.fullPivLu().solve(R);
-
-    if(left)
-    {
-        mx_left.lock();
-        resistor_map.push_back(resistor_row(resistors));
-        mx_left.unlock();
-    }
-    else
-    {
-        mx_right.lock();
-        resistor_map.push_back(resistor_row(resistors));
-        mx_right.unlock();
-    }
-}
-
-
-std::vector<std::vector<double> > DECOMPRESSER::make_aligned(std::vector<uchar> &reading)
-{
-    std::vector< std::vector<double> > aligned;
-
-    for(int y = 0; y < ROWS; y++)
-    {
-        std::vector<double> temp;
-        for(int x = COLUMNS*y; x < y*COLUMNS + COLUMNS; x++)
-        {
-            temp.push_back((double)reading.at(x));
-        }
-        aligned.push_back(temp);
-    }
-    return aligned;
-}
-
-double DECOMPRESSER::calc_force(std::vector<std::vector<double> > map)
-{
-    double force = 0;
-    for(int x = 0; x < map.size(); x++)
-    {
-        for(int y = 0; y < map[x].size(); y++)
-        {
-            force += exp(-0.964637491289655*log(1/map[x][y])+12.2205540906434);
-        }
-    }
-
-    return force;
-}
-
-std::vector<double> DECOMPRESSER::resistor_row(Eigen::MatrixXd &result)
-{
-    std::vector<double> res_row;
-
-    for(int i = 0; i < COLUMNS; i++)
-    {
-        res_row.push_back(result(i,0));
-    }
-
-    return res_row;
-}
-
-Eigen::MatrixXd DECOMPRESSER::k_creator(Eigen::MatrixXd &ones, std::vector<double> &row)
-{
-    Eigen::MatrixXd k_value = ones;
-    for(int j = 0; j < row.size(); j++)
-    {
-        double voltage = (3.3*row.at(j))/255;
-        double k = (3.3/voltage) - 1;
-
-        k_value(j,j) = -1*k;
-    }
-
-    return k_value;
-}
-
 void DECOMPRESSER::left_reader()
 {
     std::vector<uchar> data;
+    force_generator left_generator;
 
     while(ros::ok())
     {
@@ -440,7 +314,7 @@ void DECOMPRESSER::left_reader()
 
         lk.unlock();
 
-        double force = pad_force(data, true);
+        double force = left_generator.pad_force(data, true);
 
         forces_left.push_back(force);
 
@@ -451,6 +325,8 @@ void DECOMPRESSER::left_reader()
 void DECOMPRESSER::right_reader()
 {
     std::vector<uchar> data;
+
+    force_generator right_generator;
 
     while(ros::ok())
     {
@@ -476,7 +352,7 @@ void DECOMPRESSER::right_reader()
 
         lk.unlock();
 
-        double force = pad_force(data, false);
+        double force = right_generator.pad_force(data, false);
 
         forces_right.push_back(force);
 
@@ -736,18 +612,4 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
                 return false;
         }
     }
-}
-
-Eigen::MatrixXd DECOMPRESSER::constant_16by16(int value)
-{
-    Eigen::MatrixXd cells(16,16);
-    for(int i = 0; i < 16; i++)
-    {
-        for(int j = 0; j < 16; j++)
-        {
-            cells(i,j) = value;
-        }
-    }
-
-    return cells;
 }

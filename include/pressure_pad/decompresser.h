@@ -12,16 +12,18 @@
 #include "image_transport/image_transport.h"
 #include "cv_bridge/cv_bridge.h"
 
-#include <vector>
+//#include <vector>
 #include <chrono>
 #include <fstream>
 #include <iomanip>
-#include <eigen3/Eigen/Dense>
-#include <thread>
-#include <mutex>
+//#include <eigen3/Eigen/Dense>
+//#include <thread>
+//#include <mutex>
 #include <condition_variable>
 #include <pressure_pad/pressure_read.h>
 #include <sensor_msgs/Image.h>
+
+#include "pressure_pad/force_generator.h"
 
 #define DEFINED_FORCE   1300
 #define DEFINED_MOMENT  500
@@ -31,9 +33,6 @@
 
 #define HIGH_THRESH     130
 #define LOW_THRESH      6
-
-#define COLUMNS         16
-#define ROWS            32
 
 class DECOMPRESSER
 {
@@ -52,8 +51,6 @@ private:
     };
 
     //Mutex's
-    std::mutex mx_left; //!< Locks the resistor map in resistor_Convert method when the left thread is accessing it
-    std::mutex mx_right; //!< Locks the resistor map in resistor_Convert method when the right thread is accessing it
 
     std::mutex left_mx;
     std::mutex right_mx;
@@ -103,29 +100,13 @@ private:
 
     cv::SimpleBlobDetector::Params params;
 
-    double constant_R;
+//    double constant_R;
 
 private:
-    double pad_force(std::vector<uchar> &reading, bool left);
-
-    void resistor_convert(Eigen::MatrixXd &all_ones,
-                          std::vector<double> &aligned,
-                          Eigen::MatrixXd &R,
-                          std::vector< std::vector<double> > &resistor_map,
-                          bool left);
-
     void left_scan(const std_msgs::Int8MultiArrayConstPtr &input);
     void right_scan(const std_msgs::Int8MultiArrayConstPtr &input);
 
     bool is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_read &message);
-
-    double calc_force(std::vector<std::vector<double> > map);
-
-    Eigen::MatrixXd constant_16by16(int value);
-    Eigen::MatrixXd k_creator(Eigen::MatrixXd &ones, std::vector<double> &row);
-
-    std::vector<std::vector<double> > make_aligned(std::vector<uchar> &reading);
-    std::vector<double> resistor_row(Eigen::MatrixXd &result);
 
 private:
     DECOMPRESSER();

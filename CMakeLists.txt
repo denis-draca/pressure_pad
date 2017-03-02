@@ -47,8 +47,10 @@ include_directories(
 add_executable(pad_scan 
   src/main.cpp
   src/decompresser.cpp
+  src/force_generator.cpp
 
   include/pressure_pad/decompresser.h
+  include/pressure_pad/force_generator.h
 
 )
 
