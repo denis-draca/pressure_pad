@@ -21,14 +21,37 @@
 #include <mutex>
 #include <condition_variable>
 #include <pressure_pad/pressure_read.h>
+#include <sensor_msgs/Image.h>
 
-#define DEFINED_MOMENT 500
-#define X_RATIO 6.5/1000
-#define Y_RATIO 5.75/1000
+#define DEFINED_FORCE   1300
+#define DEFINED_MOMENT  500
+
+#define X_RATIO         6.5/1000
+#define Y_RATIO         5.75/1000
+
+#define HIGH_THRESH     130
+#define LOW_THRESH      6
+
+#define COLUMNS         16
+#define ROWS            32
 
 class DECOMPRESSER
 {
 private:
+    //Buffer Definitions
+    struct image_buffer
+    {
+        std::vector<cv::Mat> left_images;
+        std::vector<cv::Mat> right_images;
+    };
+
+    struct buffer
+    {
+        std::vector < std::vector<uchar> > left_readings;
+        std::vector < std::vector<uchar> > right_readings;
+    };
+
+    //Mutex's
     std::mutex mx_left; //!< Locks the resistor map in resistor_Convert method when the left thread is accessing it
     std::mutex mx_right; //!< Locks the resistor map in resistor_Convert method when the right thread is accessing it
 
@@ -38,23 +61,11 @@ private:
     std::mutex mx_left_image;
     std::mutex mx_right_image;
 
+    //Conditional Variables
     std::condition_variable con; //!< Wakes the left forces calculating thread
     std::condition_variable con_r; //!< Wakes the right force calculating thread
     std::condition_variable con_left_image;
     std::condition_variable con_right_image;
-
-    bool new_data_left = false;
-    bool new_data_right = false;
-    bool new_image_left = false;
-    bool new_image_right = false;
-
-    struct buffer
-    {
-        std::vector < std::vector<uchar> > left_readings;
-        std::vector < std::vector<uchar> > right_readings;
-    };
-
-    buffer buf;
 
     //Node Handle
     ros::NodeHandle n_;
@@ -77,18 +88,22 @@ private:
     bool left_aDone = false;
     bool right_aDone = false;
 
-    double constant_R;
+    bool new_data_left = false;
+    bool new_data_right = false;
+    bool new_image_left = false;
+    bool new_image_right = false;
 
-    struct image_buffer
-    {
-        std::vector<cv::Mat> left_images;
-        std::vector<cv::Mat> right_images;
-    };
-
+    //Vectors
     std::vector<double> forces_left;
     std::vector<double> forces_right;
 
+    //Buffers
     image_buffer img_buf;
+    buffer buf;
+
+    cv::SimpleBlobDetector::Params params;
+
+    double constant_R;
 
 private:
     double pad_force(std::vector<uchar> &reading, bool left);

@@ -18,6 +18,16 @@ DECOMPRESSER::DECOMPRESSER(ros::NodeHandle &n):
 
     sub_left_ = n_.subscribe("/wallpusher/raw_scan/left", 1, &DECOMPRESSER::left_scan, this);
     sub_right_= n_.subscribe("/wallpusher/raw_scan/right", 1, &DECOMPRESSER::right_scan, this);
+
+    params.filterByArea = true;
+    params.minArea = 1;
+    params.maxArea = 1000;
+    params.filterByColor = true;
+    params.blobColor = 255;
+    params.filterByConvexity = false;
+    params.filterByInertia = false;
+    params.filterByCircularity = false;
+
 }
 
 /***********************************************************************
@@ -64,7 +74,7 @@ void DECOMPRESSER::left_scan(const std_msgs::Int8MultiArrayConstPtr &input)
         return;
     }
 
-    cv::Mat image(32,16,CV_8U);
+    cv::Mat image(ROWS,COLUMNS,CV_8U);
 
     std::vector <uchar> v;
     bool next = false;
@@ -143,12 +153,9 @@ void DECOMPRESSER::left_scan(const std_msgs::Int8MultiArrayConstPtr &input)
 
     con_left_image.notify_all();
 
-//    sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image).toImageMsg();
-//    pub_left_.publish(msg);
-
-    cv::namedWindow("FOUND",cv::WINDOW_NORMAL);
-    cv::imshow("FOUND",image);
-    cv::waitKey(3);
+//    cv::namedWindow("FOUND",cv::WINDOW_NORMAL);
+//    cv::imshow("FOUND",image);
+//    cv::waitKey(3);
 }
 
 /***********************************************************************
@@ -187,7 +194,7 @@ void DECOMPRESSER::right_scan(const std_msgs::Int8MultiArrayConstPtr &input)
         return;
     }
 
-    cv::Mat image(32,16,CV_8U);
+    cv::Mat image(ROWS,COLUMNS,CV_8U);
 
     std::vector <uchar> v;
     bool next = false;
@@ -258,8 +265,14 @@ void DECOMPRESSER::right_scan(const std_msgs::Int8MultiArrayConstPtr &input)
         }
     }
 
-//    sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image).toImageMsg();
-//    pub_right_.publish(msg);
+    mx_right_image.lock();
+
+    img_buf.right_images.push_back(image);
+    new_image_right = true;
+
+    mx_right_image.unlock();
+
+    con_right_image.notify_all();
 
     cv::namedWindow("FOUND_RIGHT",cv::WINDOW_NORMAL);
     cv::imshow("FOUND_RIGHT",image);
@@ -278,16 +291,14 @@ double DECOMPRESSER::pad_force(std::vector<uchar> &reading, bool left)
 {
     std::vector<std::thread> thread_container;
 
-    Eigen::MatrixXd R(16,1);
+    Eigen::MatrixXd R(COLUMNS,1);
 
-    for(int i = 0; i < 16; i++)
+    for(int i = 0; i < COLUMNS; i++)
     {
-        R(i,0) = (1.0/5000.0) * -1;
+        R(i,0) = (constant_R) * -1;
     }
 
     Eigen::MatrixXd all_ones = constant_16by16(1);
-
-    bool broke = false;
 
     std::vector < std::vector<double> > aligned = make_aligned(reading);
     std::vector < std::vector<double> > resistor_map;
@@ -349,10 +360,10 @@ std::vector<std::vector<double> > DECOMPRESSER::make_aligned(std::vector<uchar> 
 {
     std::vector< std::vector<double> > aligned;
 
-    for(int y = 0; y < 32; y++)
+    for(int y = 0; y < ROWS; y++)
     {
         std::vector<double> temp;
-        for(int x = 16*y; x < y*16 + 16; x++)
+        for(int x = COLUMNS*y; x < y*COLUMNS + COLUMNS; x++)
         {
             temp.push_back((double)reading.at(x));
         }
@@ -379,7 +390,7 @@ std::vector<double> DECOMPRESSER::resistor_row(Eigen::MatrixXd &result)
 {
     std::vector<double> res_row;
 
-    for(int i = 0; i < 16; i++)
+    for(int i = 0; i < COLUMNS; i++)
     {
         res_row.push_back(result(i,0));
     }
@@ -508,17 +519,18 @@ void DECOMPRESSER::left_rivet_detector()
 
         if(is_safe(image, true, left_read))
         {
-            left_read.header.stamp = ros::Time::now();
             left_read.safe = true;
-            pub_left_.publish(left_read);
         }
         else
         {
-            left_read.header.stamp = ros::Time::now();
             left_read.safe = false;
-            pub_left_.publish(left_read);
         }
 
+        left_read.header.stamp = ros::Time::now();
+        pub_left_.publish(left_read);
+
+
+        left_read.rivet_pos.clear();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
@@ -558,16 +570,17 @@ void DECOMPRESSER::right_rivet_detector()
 
         if(is_safe(image, false, right_read))
         {
-            right_read.header.stamp = ros::Time::now();
             right_read.safe = true;
-            pub_right_.publish(right_read);
         }
         else
         {
-            right_read.header.stamp = ros::Time::now();
             right_read.safe = false;
-            pub_right_.publish(right_read);
         }
+
+        right_read.header.stamp = ros::Time::now();
+        pub_right_.publish(right_read);
+
+        right_read.rivet_pos.clear();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -575,31 +588,22 @@ void DECOMPRESSER::right_rivet_detector()
 
 bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_read &message)
 {
+    cv::SimpleBlobDetector detector(params);
+
     cv::Mat binary_image;
-    cv::Mat binary_image_test;
+//    cv::Mat binary_image_test;
     cv::Mat blur;
     cv::Mat im_with_keypoints(32,16,CV_8UC3,cv::Scalar(0,0,0));
 
     cv::GaussianBlur( image, blur, cv::Size(3, 3), 0 , 0 );
 
     cv::threshold(blur, binary_image, 10, 255, cv::THRESH_BINARY);
-    cv::threshold(blur, binary_image_test, 1, 255, cv::THRESH_BINARY);
-
-    cv::SimpleBlobDetector::Params params;
-
-    params.filterByArea = true;
-    params.minArea = 1;
-    params.maxArea = 1000;
-    params.filterByColor = true;
-    params.blobColor = 255;
-    params.filterByConvexity = false;
-    params.filterByInertia = false;
-    params.filterByCircularity = false;
-
-    cv::SimpleBlobDetector detector(params);
+//    cv::threshold(blur, binary_image_test, 1, 255, cv::THRESH_BINARY);
 
     std::vector<cv::KeyPoint> keypoints;
     detector.detect( binary_image, keypoints);
+
+
 
     int z = 0;
 
@@ -614,21 +618,7 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
         }
     }
 
-//    cv::drawKeypoints( im_with_keypoints, keypoints, im_with_keypoints,
-//                       cv::Scalar(0,0,255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-
-//    sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", im_with_keypoints).toImageMsg();
-
-//    if(is_left)
-//    {
-//        pub_left_.publish(msg);
-//    }
-//    else
-//    {
-//        pub_right_.publish(msg);
-//    }
-
-    if(z >= 130 || z <= 6)
+    if(z >= HIGH_THRESH || z <= LOW_THRESH)
     {
         std::cout << "FLAT SURFACE \n";
 
@@ -657,7 +647,7 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
         message.is_flat = true;
         message.rivet_count = 0;
 
-        if(force >= 1300)
+        if(force >= DEFINED_FORCE)
         {
             return true;
         }
@@ -668,40 +658,41 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
     {
         std::cout << "SURFACE WITH RIVETS: " << z << std::endl;
 
+        double force;
+        while(forces_left.size() == 0 && is_left)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+
+        while(forces_right.size() == 0 && !is_left)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+
+        if(is_left)
+        {
+            force = forces_left.back();
+        }
+        else
+        {
+            force = forces_right.back();
+        }
+
+        message.pad_force = force;
+
         if(keypoints.size() != 0)
         {
+            force = force/keypoints.size();
 
             for(int i = 0; i < keypoints.size(); i++)
             {
                 geometry_msgs::Point pt;
-                pt.x = keypoints[i].pt.x;
-                pt.y = keypoints[i].pt.y;
-                pt.z = 0;
+                pt.x = keypoints[i].pt.x * X_RATIO;
+                pt.y = keypoints[i].pt.y * Y_RATIO;
+                pt.z = 0.0;
 
                 message.rivet_pos.push_back(pt);
             }
-
-            double force;
-            while(forces_left.size() == 0 && is_left)
-            {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
-
-            while(forces_right.size() == 0 && !is_left)
-            {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
-
-            if(is_left)
-            {
-                force = forces_left.back()/keypoints.size();
-            }
-            else
-            {
-                force = forces_right.back()/keypoints.size();
-            }
-
-            message.pad_force = force;
 
             std::vector<double> moments;
 
@@ -716,7 +707,15 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
                 }
 
                 moments.push_back(moment_run);
+                cv::circle(im_with_keypoints,keypoints[i].pt,1, cv::Scalar(0,0,255));
             }
+
+            cv::namedWindow("detected", cv::WINDOW_NORMAL);
+            cv::imshow("detected",im_with_keypoints);
+
+            message.rivet_image = *cv_bridge::CvImage(std_msgs::Header(), "bgr8", im_with_keypoints).toImageMsg().get();
+
+            cv::waitKey(1);
 
             double average_moment = 0;
             for(int i = 0; i < moments.size(); i++)

@@ -6,5 +6,6 @@ float32 pad_force
 
 uint8 rivet_count
 
+sensor_msgs/Image rivet_image
 geometry_msgs/Point[] rivet_pos
 
