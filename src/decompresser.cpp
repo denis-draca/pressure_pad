@@ -272,9 +272,9 @@ void DECOMPRESSER::right_scan(const std_msgs::Int8MultiArrayConstPtr &input)
 
     con_right_image.notify_all();
 
-    cv::namedWindow("FOUND_RIGHT",cv::WINDOW_NORMAL);
-    cv::imshow("FOUND_RIGHT",image);
-    cv::waitKey(3);
+//    cv::namedWindow("FOUND_RIGHT",cv::WINDOW_NORMAL);
+//    cv::imshow("FOUND_RIGHT",image);
+//    cv::waitKey(3);
 }
 
 void DECOMPRESSER::wake_con()
@@ -464,22 +464,8 @@ void DECOMPRESSER::right_rivet_detector()
 
 bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_read &message)
 {
-    cv::SimpleBlobDetector detector(params);
-
-    cv::Mat binary_image;
-//    cv::Mat binary_image_test;
     cv::Mat blur;
-    cv::Mat im_with_keypoints(32,16,CV_8UC3,cv::Scalar(0,0,0));
-
     cv::GaussianBlur( image, blur, cv::Size(3, 3), 0 , 0 );
-
-    cv::threshold(blur, binary_image, 10, 255, cv::THRESH_BINARY);
-//    cv::threshold(blur, binary_image_test, 1, 255, cv::THRESH_BINARY);
-
-    std::vector<cv::KeyPoint> keypoints;
-    detector.detect( binary_image, keypoints);
-
-
 
     int z = 0;
 
@@ -512,11 +498,11 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
 
         if(is_left)
         {
-            force = forces_left.back()/3.0;
+            force = forces_left.back();
         }
         else
         {
-            force = forces_right.back()/3.0;
+            force = forces_right.back();
         }
 
         message.pad_force = force;
@@ -532,6 +518,16 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
     }
     else
     {
+        cv::SimpleBlobDetector detector(params);
+
+        cv::Mat binary_image;
+        cv::Mat im_with_keypoints(32,16,CV_8UC3,cv::Scalar(0,0,0));
+        cv::threshold(blur, binary_image, 10, 255, cv::THRESH_BINARY);
+
+        std::vector<cv::KeyPoint> keypoints;
+
+        detector.detect( binary_image, keypoints);
+
         std::cout << "SURFACE WITH RIVETS: " << z << std::endl;
 
         double force;
@@ -555,6 +551,8 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
         }
 
         message.pad_force = force;
+        message.is_flat = false;
+        message.rivet_count = keypoints.size();
 
         if(keypoints.size() != 0)
         {
@@ -586,12 +584,15 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
                 cv::circle(im_with_keypoints,keypoints[i].pt,1, cv::Scalar(0,0,255));
             }
 
-            cv::namedWindow("detected", cv::WINDOW_NORMAL);
-            cv::imshow("detected",im_with_keypoints);
+//            cv::namedWindow("Rivets", cv::WINDOW_NORMAL);
+//            cv::imshow("Rivets",im_with_keypoints);
+
+//            cv::namedWindow("Original_Image", cv::WINDOW_NORMAL);
+//            cv::imshow("Original_Image",image);
 
             message.rivet_image = *cv_bridge::CvImage(std_msgs::Header(), "bgr8", im_with_keypoints).toImageMsg().get();
 
-            cv::waitKey(1);
+//            cv::waitKey(1);
 
             double average_moment = 0;
             for(int i = 0; i < moments.size(); i++)
@@ -603,13 +604,13 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
 
             std::cout << "AVG_MOMENT: " << average_moment << std::endl;
 
-            message.is_flat = false;
-            message.rivet_count = keypoints.size();
-
             if(average_moment >= DEFINED_MOMENT)
                 return true;
             else
                 return false;
         }
+        else
+            return false;
     }
+
 }

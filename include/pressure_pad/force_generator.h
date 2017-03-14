@@ -19,6 +19,8 @@ private:
     std::mutex mx_left; //!< Locks the resistor map in resistor_Convert method when the left thread is accessing it
     std::mutex mx_right; //!< Locks the resistor map in resistor_Convert method when the right thread is accessing it
 
+    Eigen::MatrixXd R;
+
 private:
 
     double calc_force(std::vector<std::vector<double> > map);
@@ -31,7 +33,6 @@ private:
 
     void resistor_convert(Eigen::MatrixXd &all_ones,
                           std::vector<double> &aligned,
-                          Eigen::MatrixXd &R,
                           std::vector< std::vector<double> > &resistor_map,
                           bool left);
 
