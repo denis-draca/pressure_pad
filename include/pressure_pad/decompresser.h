@@ -12,27 +12,26 @@
 #include "image_transport/image_transport.h"
 #include "cv_bridge/cv_bridge.h"
 
-//#include <vector>
 #include <chrono>
 #include <fstream>
 #include <iomanip>
-//#include <eigen3/Eigen/Dense>
-//#include <thread>
-//#include <mutex>
 #include <condition_variable>
 #include <pressure_pad/pressure_read.h>
 #include <sensor_msgs/Image.h>
 
 #include "pressure_pad/force_generator.h"
+#include "pressure_pad/slip_detect.h"
 
 #define DEFINED_FORCE   1300
-#define DEFINED_MOMENT  500
+#define DEFINED_MOMENT  300
 
 #define X_RATIO         6.5/1000
 #define Y_RATIO         5.75/1000
 
 #define HIGH_THRESH     130
 #define LOW_THRESH      6
+
+#define BUF_COUNT       5
 
 class DECOMPRESSER
 {
@@ -71,7 +70,7 @@ private:
     ros::Publisher pub_left_;
     ros::Publisher pub_right_;
 
-    image_transport::ImageTransport it_;
+//    image_transport::ImageTransport it_;
 
     //Subscribers
     ros::Subscriber sub_left_;
@@ -100,21 +99,19 @@ private:
 
     cv::SimpleBlobDetector::Params params;
 
-//    double constant_R;
-
 private:
     void left_scan(const std_msgs::Int8MultiArrayConstPtr &input);
     void right_scan(const std_msgs::Int8MultiArrayConstPtr &input);
 
-    bool is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_read &message);
+    bool is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_read &message, slip_detect &slip_read);
 
 private:
     DECOMPRESSER();
 
 public:
-    void wake_con();
     DECOMPRESSER(ros::NodeHandle &n);
 
+    void wake_con();
     void left_reader();
     void right_reader();
 

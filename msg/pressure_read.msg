@@ -1,6 +1,7 @@
 Header header
 bool safe
 bool is_flat
+bool has_slipped
 
 float32 pad_force
 

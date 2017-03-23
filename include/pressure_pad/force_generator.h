@@ -5,7 +5,7 @@
 #include <vector>
 #include <mutex>
 #include <thread>
-#include <iostream>
+//#include <iostream>
 
 #define COLUMNS         16
 #define ROWS            32
@@ -22,7 +22,6 @@ private:
     Eigen::MatrixXd R;
 
 private:
-
     double calc_force(std::vector<std::vector<double> > map);
 
     Eigen::MatrixXd constant_16by16(int value);

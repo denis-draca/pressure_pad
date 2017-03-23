@@ -1,4 +1,4 @@
-#include "pressure_pad/force_generator.h"
+ #include "pressure_pad/force_generator.h"
 
 force_generator::force_generator()
 {
@@ -37,18 +37,20 @@ double force_generator::pad_force(std::vector<uchar> &reading, bool left)
         thread_container[i].join();
     }
 
-    if(left)
-    {
-        double total_force = calc_force(resistor_map);
-        std::cout << "\033[1;31m\nFront left Force: \033[0m" << total_force/9.81 <<std::endl;
-        return total_force;
-    }
-    else
-    {
-        double total_force = calc_force(resistor_map);
-        std::cout << "\033[1;31m\nFront Right Force: \033[0m" << total_force/9.81 << std::endl;
-        return total_force;
-    }
+//    if(left)
+//    {
+//        double total_force = calc_force(resistor_map);
+//        std::cout << "\033[1;31m\nFront left Force: \033[0m" << total_force/9.81 <<std::endl;
+//        return total_force;
+//    }
+//    else
+//    {
+//        double total_force = calc_force(resistor_map);
+//        std::cout << "\033[1;31m\nFront Right Force: \033[0m" << total_force/9.81 << std::endl;
+//        return total_force;
+//    }
+
+    return calc_force(resistor_map);
 }
 
 void force_generator::resistor_convert(Eigen::MatrixXd &all_ones, std::vector<double> &aligned,

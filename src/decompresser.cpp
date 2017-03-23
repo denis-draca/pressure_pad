@@ -9,7 +9,7 @@
  */
 
 DECOMPRESSER::DECOMPRESSER(ros::NodeHandle &n):
-    n_(n), it_(n)
+    n_(n)
 {
     pub_left_ = n_.advertise<pressure_pad::pressure_read>("/wallpusher/reading/left",1);
     pub_right_= n_.advertise<pressure_pad::pressure_read>("/wallpusher/reading/right",1);
@@ -53,7 +53,6 @@ void DECOMPRESSER::left_scan(const std_msgs::Int8MultiArrayConstPtr &input)
         left_aDone = true;
         return;
     }
-
 
     if (left_aDone && input->layout.dim[0].label != "a")
     {
@@ -150,10 +149,6 @@ void DECOMPRESSER::left_scan(const std_msgs::Int8MultiArrayConstPtr &input)
     mx_left_image.unlock();
 
     con_left_image.notify_all();
-
-//    cv::namedWindow("FOUND",cv::WINDOW_NORMAL);
-//    cv::imshow("FOUND",image);
-//    cv::waitKey(3);
 }
 
 /***********************************************************************
@@ -271,10 +266,6 @@ void DECOMPRESSER::right_scan(const std_msgs::Int8MultiArrayConstPtr &input)
     mx_right_image.unlock();
 
     con_right_image.notify_all();
-
-//    cv::namedWindow("FOUND_RIGHT",cv::WINDOW_NORMAL);
-//    cv::imshow("FOUND_RIGHT",image);
-//    cv::waitKey(3);
 }
 
 void DECOMPRESSER::wake_con()
@@ -325,7 +316,6 @@ void DECOMPRESSER::left_reader()
 void DECOMPRESSER::right_reader()
 {
     std::vector<uchar> data;
-
     force_generator right_generator;
 
     while(ros::ok())
@@ -362,6 +352,7 @@ void DECOMPRESSER::right_reader()
 
 void DECOMPRESSER::left_rivet_detector()
 {
+    slip_detect slip_read;
     pressure_pad::pressure_read left_read;
     while(ros::ok())
     {
@@ -393,7 +384,7 @@ void DECOMPRESSER::left_rivet_detector()
 
         lk.unlock();
 
-        if(is_safe(image, true, left_read))
+        if(is_safe(image, true, left_read, slip_read))
         {
             left_read.safe = true;
         }
@@ -407,12 +398,14 @@ void DECOMPRESSER::left_rivet_detector()
 
 
         left_read.rivet_pos.clear();
+        left_read.has_slipped = false;
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
 void DECOMPRESSER::right_rivet_detector()
 {
+    slip_detect slip_read;
     pressure_pad::pressure_read right_read;
     while(ros::ok())
     {
@@ -444,7 +437,7 @@ void DECOMPRESSER::right_rivet_detector()
 
         lk.unlock();
 
-        if(is_safe(image, false, right_read))
+        if(is_safe(image, false, right_read, slip_read))
         {
             right_read.safe = true;
         }
@@ -452,17 +445,17 @@ void DECOMPRESSER::right_rivet_detector()
         {
             right_read.safe = false;
         }
-
         right_read.header.stamp = ros::Time::now();
         pub_right_.publish(right_read);
 
         right_read.rivet_pos.clear();
+        right_read.has_slipped = false;
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
-bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_read &message)
+bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_read &message, slip_detect &slip_read)
 {
     cv::Mat blur;
     cv::GaussianBlur( image, blur, cv::Size(3, 3), 0 , 0 );
@@ -482,8 +475,6 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
 
     if(z >= HIGH_THRESH || z <= LOW_THRESH)
     {
-        std::cout << "FLAT SURFACE \n";
-
         double force;
 
         while(forces_left.size() == 0 && is_left)
@@ -528,8 +519,6 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
 
         detector.detect( binary_image, keypoints);
 
-        std::cout << "SURFACE WITH RIVETS: " << z << std::endl;
-
         double force;
         while(forces_left.size() == 0 && is_left)
         {
@@ -556,6 +545,7 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
 
         if(keypoints.size() != 0)
         {
+            std::vector<cv::Point2f> temp_pts;
             force = force/keypoints.size();
 
             for(int i = 0; i < keypoints.size(); i++)
@@ -566,6 +556,24 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
                 pt.z = 0.0;
 
                 message.rivet_pos.push_back(pt);
+
+                temp_pts.push_back(keypoints.at(i).pt);
+            }
+
+            slip_read.push_points(temp_pts);
+
+            if(slip_read.saved_points() >= BUF_COUNT)
+            {
+                if(slip_read.has_slipped())
+                {
+                    message.has_slipped = true;
+                    return false;
+                }
+                else
+                {
+                    message.has_slipped = false;
+                    return true;
+                }
             }
 
             std::vector<double> moments;
@@ -584,15 +592,7 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
                 cv::circle(im_with_keypoints,keypoints[i].pt,1, cv::Scalar(0,0,255));
             }
 
-//            cv::namedWindow("Rivets", cv::WINDOW_NORMAL);
-//            cv::imshow("Rivets",im_with_keypoints);
-
-//            cv::namedWindow("Original_Image", cv::WINDOW_NORMAL);
-//            cv::imshow("Original_Image",image);
-
             message.rivet_image = *cv_bridge::CvImage(std_msgs::Header(), "bgr8", im_with_keypoints).toImageMsg().get();
-
-//            cv::waitKey(1);
 
             double average_moment = 0;
             for(int i = 0; i < moments.size(); i++)
