@@ -48,9 +48,11 @@ add_executable(pad_scan
   src/main.cpp
   src/decompresser.cpp
   src/force_generator.cpp
+  src/slip_detect.cpp
 
   include/pressure_pad/decompresser.h
   include/pressure_pad/force_generator.h
+  include/pressure_pad/slip_detect.h
 
 )
 

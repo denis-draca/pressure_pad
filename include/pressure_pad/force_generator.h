@@ -5,6 +5,7 @@
 #include <vector>
 #include <mutex>
 #include <thread>
+#include <opencv2/opencv.hpp>
 //#include <iostream>
 
 #define COLUMNS         16
@@ -22,7 +23,7 @@ private:
     Eigen::MatrixXd R;
 
 private:
-    double calc_force(std::vector<std::vector<double> > map);
+    double calc_force(std::vector<std::vector<double> > map, cv::Mat &image, std::vector<double> &force_per_cell);
 
     Eigen::MatrixXd constant_16by16(int value);
     Eigen::MatrixXd k_creator(Eigen::MatrixXd &ones, std::vector<double> &row);
@@ -33,12 +34,12 @@ private:
     void resistor_convert(Eigen::MatrixXd &all_ones,
                           std::vector<double> &aligned,
                           std::vector< std::vector<double> > &resistor_map,
-                          bool left);
+                          bool left, int i);
 
 public:
     force_generator();
 
-    double pad_force(std::vector<uchar> &reading, bool left);
+    double pad_force(std::vector<uchar> &reading, bool left, cv::Mat &image, std::vector<double> &force_per_cell);
 };
 
 #endif // FORCE_GENERATOR_H

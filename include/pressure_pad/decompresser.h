@@ -22,16 +22,17 @@
 #include "pressure_pad/force_generator.h"
 #include "pressure_pad/slip_detect.h"
 
-#define DEFINED_FORCE   1300
-#define DEFINED_MOMENT  300
+#define DEFINED_FORCE   1300        //what counts as a safe force
+#define DEFINED_MOMENT  300         //what counts as a safe moment
 
-#define X_RATIO         6.5/1000
-#define Y_RATIO         5.75/1000
+#define X_RATIO         6.5/1000    //Convert from pixels to m in the x-direction
+#define Y_RATIO         5.75/1000   //Convert from pixels to m in the y-direction
 
-#define HIGH_THRESH     130
-#define LOW_THRESH      6
+#define HIGH_THRESH     130         //Pixel count higher than this counts as a flat surface
+#define LOW_THRESH      6           //Pixel count lower than this counts as a flat surface
 
-#define BUF_COUNT       5
+#define BUF_COUNT       40          //How many readings are stored before a slip detection is performed. The slower the expected slip the higher
+                                    //this number needs to be
 
 class DECOMPRESSER
 {
@@ -48,6 +49,8 @@ private:
         std::vector < std::vector<uchar> > left_readings;
         std::vector < std::vector<uchar> > right_readings;
     };
+
+    std::vector< std::vector<double> > buf_per_cell;
 
     //Mutex's
 
@@ -70,7 +73,9 @@ private:
     ros::Publisher pub_left_;
     ros::Publisher pub_right_;
 
-//    image_transport::ImageTransport it_;
+    image_transport::Publisher pub;
+
+    image_transport::ImageTransport it_;
 
     //Subscribers
     ros::Subscriber sub_left_;

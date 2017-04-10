@@ -12,11 +12,13 @@ private:
 public:
     slip_detect();
 
-    void push_points(std::vector<cv::Point2f> &points);
+    void push_points(std::vector<cv::Point2f> points);
 
     bool has_slipped();
 
     int saved_points();
+
+    void force_clear();
 };
 
 #endif // SLIP_DETECT_H

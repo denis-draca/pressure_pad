@@ -9,10 +9,12 @@
  */
 
 DECOMPRESSER::DECOMPRESSER(ros::NodeHandle &n):
-    n_(n)
+    n_(n), it_(n)
 {
     pub_left_ = n_.advertise<pressure_pad::pressure_read>("/wallpusher/reading/left",1);
     pub_right_= n_.advertise<pressure_pad::pressure_read>("/wallpusher/reading/right",1);
+
+    pub = it_.advertise("camera/image", 1);
 
     sub_left_ = n_.subscribe("/wallpusher/raw_scan/left", 1, &DECOMPRESSER::left_scan, this);
     sub_right_= n_.subscribe("/wallpusher/raw_scan/right", 1, &DECOMPRESSER::right_scan, this);
@@ -39,7 +41,7 @@ void DECOMPRESSER::left_scan(const std_msgs::Int8MultiArrayConstPtr &input)
 {
     if(input->data.size() == 0)
     {
-        ROS_INFO("No Data Transmitted");
+        ROS_ERROR("No Data Transmitted");
         return;
     }
 
@@ -67,7 +69,7 @@ void DECOMPRESSER::left_scan(const std_msgs::Int8MultiArrayConstPtr &input)
 
     if(input_scan_left_.size() > 512)
     {
-        ROS_INFO("TOO MANY DATA POINTS SENT -> %d", (int)input_scan_left_.size());
+        ROS_ERROR("TOO MANY DATA POINTS SENT -> %d", (int)input_scan_left_.size());
         return;
     }
 
@@ -111,18 +113,23 @@ void DECOMPRESSER::left_scan(const std_msgs::Int8MultiArrayConstPtr &input)
 
     if(v.size() == 0)
     {
-        ROS_INFO("DECOMPRESSED DATA is EMPTY -> %d", (int)v.size());
+        ROS_ERROR("DECOMPRESSED DATA is EMPTY -> %d", (int)v.size());
         return;
     }
 
     if (v.size() > 512)
     {
-        ROS_INFO("DECOMPRESSED DATA HAS TOO MANY DATA POINTS -> %d", (int)v.size());
+        ROS_ERROR("DECOMPRESSED DATA HAS TOO MANY DATA POINTS -> %d", (int)v.size());
         return;
     }
 
+    left_mx.lock();
+
     buf.left_readings.push_back(v);
     new_data_left = true;
+
+    left_mx.unlock();
+
     con.notify_all();
 
     int pos = 0;
@@ -140,15 +147,6 @@ void DECOMPRESSER::left_scan(const std_msgs::Int8MultiArrayConstPtr &input)
             pos++;
         }
     }
-
-    mx_left_image.lock();
-
-    img_buf.left_images.push_back(image);
-    new_image_left = true;
-
-    mx_left_image.unlock();
-
-    con_left_image.notify_all();
 }
 
 /***********************************************************************
@@ -237,8 +235,12 @@ void DECOMPRESSER::right_scan(const std_msgs::Int8MultiArrayConstPtr &input)
         return;
     }
 
+    right_mx.lock();
+
     buf.left_readings.push_back(v);
     new_data_right = true;
+
+    right_mx.unlock();
     con_r.notify_all();
 
     int pos = 0;
@@ -257,15 +259,6 @@ void DECOMPRESSER::right_scan(const std_msgs::Int8MultiArrayConstPtr &input)
             pos++;
         }
     }
-
-    mx_right_image.lock();
-
-    img_buf.right_images.push_back(image);
-    new_image_right = true;
-
-    mx_right_image.unlock();
-
-    con_right_image.notify_all();
 }
 
 void DECOMPRESSER::wake_con()
@@ -283,6 +276,9 @@ void DECOMPRESSER::left_reader()
 
     while(ros::ok())
     {
+        std::vector<double> force_per_cell;
+        cv::Mat image(ROWS,COLUMNS,CV_8U, cv::Scalar(0,0,0));
+
         std::unique_lock<std::mutex> lk(left_mx);
 
         while(!new_data_left && ros::ok())
@@ -305,9 +301,22 @@ void DECOMPRESSER::left_reader()
 
         lk.unlock();
 
-        double force = left_generator.pad_force(data, true);
+        double force = left_generator.pad_force(data, true, image, force_per_cell);
 
+        mx_left_image.lock();
+
+        img_buf.left_images.push_back(image);
         forces_left.push_back(force);
+        new_image_left = true;
+        buf_per_cell.push_back(force_per_cell);
+
+        mx_left_image.unlock();
+
+        con_left_image.notify_all();
+
+
+        sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", image).toImageMsg();
+        pub.publish(msg);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -317,9 +326,11 @@ void DECOMPRESSER::right_reader()
 {
     std::vector<uchar> data;
     force_generator right_generator;
+    std::vector<double> force_per_cell;
 
     while(ros::ok())
     {
+        cv::Mat image(ROWS,COLUMNS,CV_8U);
         std::unique_lock<std::mutex> lk(right_mx);
 
         while(!new_data_right && ros::ok())
@@ -342,9 +353,18 @@ void DECOMPRESSER::right_reader()
 
         lk.unlock();
 
-        double force = right_generator.pad_force(data, false);
+        double force = right_generator.pad_force(data, false, image, force_per_cell);
 
+        mx_right_image.lock();
+
+        img_buf.right_images.push_back(image);
+        new_image_right = true;
         forces_right.push_back(force);
+
+        mx_right_image.unlock();
+
+        con_right_image.notify_all();
+
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -382,6 +402,13 @@ void DECOMPRESSER::left_rivet_detector()
             continue;
         }
 
+
+        for(int i = 0; i < buf_per_cell.back().size(); i++)
+        {
+            left_read.force_per_cell.push_back(buf_per_cell.back().at(i));
+        }
+        buf_per_cell.clear();
+
         lk.unlock();
 
         if(is_safe(image, true, left_read, slip_read))
@@ -398,7 +425,8 @@ void DECOMPRESSER::left_rivet_detector()
 
 
         left_read.rivet_pos.clear();
-        left_read.has_slipped = false;
+        left_read.force_per_cell.clear();
+
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
@@ -449,7 +477,6 @@ void DECOMPRESSER::right_rivet_detector()
         pub_right_.publish(right_read);
 
         right_read.rivet_pos.clear();
-        right_read.has_slipped = false;
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -472,6 +499,9 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
             }
         }
     }
+
+
+    cv::waitKey(3);
 
     if(z >= HIGH_THRESH || z <= LOW_THRESH)
     {
@@ -496,6 +526,12 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
             force = forces_right.back();
         }
 
+        if(force <= 1)
+        {
+            ROS_INFO("LOW FORCE");
+            message.has_slipped = false;
+        }
+
         message.pad_force = force;
         message.is_flat = true;
         message.rivet_count = 0;
@@ -514,6 +550,15 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
         cv::Mat binary_image;
         cv::Mat im_with_keypoints(32,16,CV_8UC3,cv::Scalar(0,0,0));
         cv::threshold(blur, binary_image, 10, 255, cv::THRESH_BINARY);
+//        cv::adaptiveThreshold(image, binary_image, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 3, 0);
+
+//        cv::namedWindow("normal", cv::WINDOW_NORMAL);
+//        cv::namedWindow("binary", cv::WINDOW_NORMAL);
+
+//        cv::imshow("normal", image);
+//        cv::imshow("binary", binary_image);
+
+//        cv::waitKey(3);
 
         std::vector<cv::KeyPoint> keypoints;
 
@@ -551,8 +596,8 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
             for(int i = 0; i < keypoints.size(); i++)
             {
                 geometry_msgs::Point pt;
-                pt.x = keypoints[i].pt.x * X_RATIO;
-                pt.y = keypoints[i].pt.y * Y_RATIO;
+                pt.x = keypoints[i].pt.x /** X_RATIO*/;
+                pt.y = keypoints[i].pt.y /** Y_RATIO*/;
                 pt.z = 0.0;
 
                 message.rivet_pos.push_back(pt);
@@ -561,18 +606,19 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
             }
 
             slip_read.push_points(temp_pts);
+            ROS_INFO("BUF SIZE: %d", slip_read.saved_points());
 
             if(slip_read.saved_points() >= BUF_COUNT)
             {
                 if(slip_read.has_slipped())
                 {
+                    ROS_ERROR("SLIPPED");
                     message.has_slipped = true;
-                    return false;
                 }
-                else
+
+                if(slip_read.saved_points() >= BUF_COUNT)
                 {
-                    message.has_slipped = false;
-                    return true;
+                    slip_read.force_clear();
                 }
             }
 
@@ -592,7 +638,11 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
                 cv::circle(im_with_keypoints,keypoints[i].pt,1, cv::Scalar(0,0,255));
             }
 
-            message.rivet_image = *cv_bridge::CvImage(std_msgs::Header(), "bgr8", im_with_keypoints).toImageMsg().get();
+//            cv::namedWindow("key", cv::WINDOW_NORMAL);
+//            cv::imshow("key", im_with_keypoints);
+//            cv::waitKey(3);
+
+//            message.rivet_image = *cv_bridge::CvImage(std_msgs::Header(), "bgr8", im_with_keypoints).toImageMsg().get();
 
             double average_moment = 0;
             for(int i = 0; i < moments.size(); i++)
