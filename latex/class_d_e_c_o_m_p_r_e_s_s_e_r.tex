@@ -1,0 +1,394 @@
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r}{\section{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R Class Reference}
+\label{class_d_e_c_o_m_p_r_e_s_s_e_r}\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+}
+
+
+{\ttfamily \#include $<$decompresser.\-h$>$}
+
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_d_e_c_o_m_p_r_e_s_s_e_r_1_1buffer}{buffer}
+\item 
+struct \hyperlink{struct_d_e_c_o_m_p_r_e_s_s_e_r_1_1image__buffer}{image\-\_\-buffer}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a55b9b97e2a904351b670bb8d0b418976}{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R} (ros\-::\-Node\-Handle \&n)
+\item 
+void \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a0ec0e540c96a4ca08f1525ed85785964}{wake\-\_\-con} ()
+\begin{DoxyCompactList}\small\item\em wake\-\_\-con -\/ forcefully wakes up all the conditional variables \end{DoxyCompactList}\item 
+void \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_ad369a64e880f213addbfe485e101e252}{left\-\_\-reader} ()
+\begin{DoxyCompactList}\small\item\em left\-\_\-reader -\/ performs the force calculations for the left pad \end{DoxyCompactList}\item 
+void \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a197f1deb0b828a7d8ead5628732f7eb4}{right\-\_\-reader} ()
+\begin{DoxyCompactList}\small\item\em right\-\_\-reader -\/ performs the force calculations for the right pad \end{DoxyCompactList}\item 
+void \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a96a68a95a775f15d93bfa6ffe36ff5a3}{left\-\_\-rivet\-\_\-detector} ()
+\begin{DoxyCompactList}\small\item\em left\-\_\-rivet\-\_\-detector -\/ Performs the rivet detection for the left pad \end{DoxyCompactList}\item 
+void \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_ae4ed92ca1fcf52b543b15022b9669723}{right\-\_\-rivet\-\_\-detector} ()
+\begin{DoxyCompactList}\small\item\em right\-\_\-rivet\-\_\-detector -\/ Performs the rivet detection for the right pad \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a974bdbaca3c74f44fb9578a2495e5434}{left\-\_\-scan} (const std\-\_\-msgs\-::\-Int8\-Multi\-Array\-Const\-Ptr \&input)
+\begin{DoxyCompactList}\small\item\em left\-\_\-scan -\/ Gets the reading from the left Mbed and decompresses the reading \end{DoxyCompactList}\item 
+void \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a9409df1493e7a1b2841466304611d361}{right\-\_\-scan} (const std\-\_\-msgs\-::\-Int8\-Multi\-Array\-Const\-Ptr \&input)
+\begin{DoxyCompactList}\small\item\em right\-\_\-scan -\/ Gets the reading from the right Mbed and decompresses the reading \end{DoxyCompactList}\item 
+bool \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a8c30f402301b111e9c3f6efa721c926b}{is\-\_\-safe} (cv\-::\-Mat \&image, bool is\-\_\-left, pressure\-\_\-pad\-::pressure\-\_\-read \&message, \hyperlink{classslip__detect}{slip\-\_\-detect} \&slip\-\_\-read)
+\begin{DoxyCompactList}\small\item\em is\-\_\-safe -\/ Performs all the necessary checks to detemine if the step is safe or not. This involves looking at the total amount of rivets and the moments created by them. A flat surface is detected as safe given a certain force \end{DoxyCompactList}\item 
+cv\-::\-Mat \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_ad2aadf38da0d144f527bf35779a02c71}{img\-\_\-upscale} (cv\-::\-Mat \&small\-\_\-img, unsigned int scale\-\_\-factor)
+\begin{DoxyCompactList}\small\item\em img\-\_\-upscale -\/ Increases the resolution of the scan image \end{DoxyCompactList}\item 
+cv\-::\-Point2f \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a3c48b98dde806c63dfd8524792127d8e}{weighted\-\_\-average} (cv\-::\-Mat \&resize, cv\-::\-Point2f \&centre, double diameter)
+\begin{DoxyCompactList}\small\item\em weighted\-\_\-average -\/ Takes the output from the blob detection and uses that as a starting point to refine the position of the rivet \end{DoxyCompactList}\item 
+\hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a79c0d624a360aa25f2dfd0a3e4d8d478}{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R} ()
+\end{DoxyCompactItemize}
+\subsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\-::vector$<$ std\-::vector\\*
+$<$ double $>$ $>$ \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a22a44231bf30be0dcc70e69997060229}{buf\-\_\-per\-\_\-cell}
+\item 
+std\-::mutex \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a7651aa3b9e261f73663a72ae58e0a0d8}{left\-\_\-mx}
+\item 
+std\-::mutex \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a460f81e181d9cf6bd3e231ccb214ee85}{right\-\_\-mx}
+\item 
+std\-::mutex \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_ad02e30134a049358562bbbdbf3fe9431}{mx\-\_\-left\-\_\-image}
+\item 
+std\-::mutex \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_afb694b6685eb9defa4f7b74b532dfe1f}{mx\-\_\-right\-\_\-image}
+\item 
+std\-::condition\-\_\-variable \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_af32f59832855fe170d0648df9a796ab7}{con}
+\begin{DoxyCompactList}\small\item\em Wakes the left forces calculating thread. \end{DoxyCompactList}\item 
+std\-::condition\-\_\-variable \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a04c8c6987f5a9d3b1a8be8d79f1e4ead}{con\-\_\-r}
+\begin{DoxyCompactList}\small\item\em Wakes the right force calculating thread. \end{DoxyCompactList}\item 
+std\-::condition\-\_\-variable \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a2c0c696518b5fabce9e67bad1ba0575b}{con\-\_\-left\-\_\-image}
+\item 
+std\-::condition\-\_\-variable \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a291f014d7ab2626b04f707e7dc2f1b10}{con\-\_\-right\-\_\-image}
+\item 
+ros\-::\-Node\-Handle \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a8ed70fff7c216f20ff25facd0fbfeaf6}{n\-\_\-}
+\item 
+ros\-::\-Publisher \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a766c3bb649e0c98548415ed19c229207}{pub\-\_\-left\-\_\-}
+\item 
+ros\-::\-Publisher \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_aa40c8497ac3ee01dff392f6568dadc85}{pub\-\_\-right\-\_\-}
+\item 
+image\-\_\-transport\-::\-Publisher \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a105ecd49becc435a09962b745617c4a8}{pub}
+\item 
+image\-\_\-transport\-::\-Image\-Transport \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_afb78a3024809463300b5909e1c00aa2f}{it\-\_\-}
+\item 
+ros\-::\-Subscriber \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a8e49925bbb0afc939e26af6d72d8af02}{sub\-\_\-left\-\_\-}
+\item 
+ros\-::\-Subscriber \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a09941b5967e1aa1bb182ad155bc5fb46}{sub\-\_\-right\-\_\-}
+\item 
+std\-::vector$<$ int16\-\_\-t $>$ \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a170670afc3d63870f74dc97eb38ed1ab}{input\-\_\-scan\-\_\-left\-\_\-}
+\item 
+std\-::vector$<$ int16\-\_\-t $>$ \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a8a8f54b17159575afe94a6a19507a04a}{input\-\_\-scan\-\_\-right\-\_\-}
+\item 
+bool \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a0cc04e7a8c2f6d84c3d8791d3a2e8922}{left\-\_\-a\-Done} = false
+\item 
+bool \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a6ebe4ab2dc19da34d1c2124dd3d3932e}{right\-\_\-a\-Done} = false
+\item 
+bool \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_adb166bd562b2186a485976147aab8b1d}{new\-\_\-data\-\_\-left} = false
+\item 
+bool \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a3a5164ed608e08edc80d29595d0db2a0}{new\-\_\-data\-\_\-right} = false
+\item 
+bool \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a965756ee113264c19b5e409a3c0b28bd}{new\-\_\-image\-\_\-left} = false
+\item 
+bool \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a207d9f29b337fec4909dbaf8fced8d5d}{new\-\_\-image\-\_\-right} = false
+\item 
+std\-::vector$<$ double $>$ \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a2ebd76248d2f3b00ba748df990aee2e9}{forces\-\_\-left}
+\item 
+std\-::vector$<$ double $>$ \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_accfe1081e8158a1f9e14c9b9a5603fa0}{forces\-\_\-right}
+\item 
+\hyperlink{struct_d_e_c_o_m_p_r_e_s_s_e_r_1_1image__buffer}{image\-\_\-buffer} \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_aa2f14d52d18801d9477045b36c3a2b4c}{img\-\_\-buf}
+\item 
+\hyperlink{struct_d_e_c_o_m_p_r_e_s_s_e_r_1_1buffer}{buffer} \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a58ccbfc79c1a69cc6947ad3dca223b56}{buf}
+\item 
+cv\-::\-Simple\-Blob\-Detector\-::\-Params \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r_a30cbd1fd3ec1f2a2fcc8b3f33dd34ad1}{params}
+\end{DoxyCompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a79c0d624a360aa25f2dfd0a3e4d8d478}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}]{\setlength{\rightskip}{0pt plus 5cm}D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::\-D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a79c0d624a360aa25f2dfd0a3e4d8d478}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a55b9b97e2a904351b670bb8d0b418976}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}]{\setlength{\rightskip}{0pt plus 5cm}D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::\-D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R (
+\begin{DoxyParamCaption}
+\item[{ros\-::\-Node\-Handle \&}]{n}
+\end{DoxyParamCaption}
+)}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a55b9b97e2a904351b670bb8d0b418976}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_ad2aadf38da0d144f527bf35779a02c71}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!img\-\_\-upscale@{img\-\_\-upscale}}
+\index{img\-\_\-upscale@{img\-\_\-upscale}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{img\-\_\-upscale}]{\setlength{\rightskip}{0pt plus 5cm}cv\-::\-Mat D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::img\-\_\-upscale (
+\begin{DoxyParamCaption}
+\item[{cv\-::\-Mat \&}]{small\-\_\-img, }
+\item[{unsigned int}]{scale\-\_\-factor}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_ad2aadf38da0d144f527bf35779a02c71}
+
+
+img\-\_\-upscale -\/ Increases the resolution of the scan image 
+
+
+\begin{DoxyParams}{Parameters}
+{\em small\-\_\-img} & -\/ initial image \\
+\hline
+{\em scale\-\_\-factor} & -\/ How much are we scaling by \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+(Mat) -\/ larger image 
+\end{DoxyReturn}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a8c30f402301b111e9c3f6efa721c926b}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!is\-\_\-safe@{is\-\_\-safe}}
+\index{is\-\_\-safe@{is\-\_\-safe}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{is\-\_\-safe}]{\setlength{\rightskip}{0pt plus 5cm}bool D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::is\-\_\-safe (
+\begin{DoxyParamCaption}
+\item[{cv\-::\-Mat \&}]{image, }
+\item[{bool}]{is\-\_\-left, }
+\item[{pressure\-\_\-pad\-::pressure\-\_\-read \&}]{message, }
+\item[{{\bf slip\-\_\-detect} \&}]{slip\-\_\-read}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a8c30f402301b111e9c3f6efa721c926b}
+
+
+is\-\_\-safe -\/ Performs all the necessary checks to detemine if the step is safe or not. This involves looking at the total amount of rivets and the moments created by them. A flat surface is detected as safe given a certain force 
+
+
+\begin{DoxyParams}{Parameters}
+{\em image} & -\/ image generated from the force values \\
+\hline
+{\em is\-\_\-left} & -\/ true if left image \\
+\hline
+{\em message} & -\/ R\-O\-S custom message. Certain members will be completed here \\
+\hline
+{\em slip\-\_\-read} & -\/ Object containing the previous readings \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+(bool) -\/ True if the step is safe, will go false during a slip 
+\end{DoxyReturn}
+X\-\_\-\-R\-A\-T\-I\-O
+
+Y\-\_\-\-R\-A\-T\-I\-O \hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_ad369a64e880f213addbfe485e101e252}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!left\-\_\-reader@{left\-\_\-reader}}
+\index{left\-\_\-reader@{left\-\_\-reader}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{left\-\_\-reader}]{\setlength{\rightskip}{0pt plus 5cm}void D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::left\-\_\-reader (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_ad369a64e880f213addbfe485e101e252}
+
+
+left\-\_\-reader -\/ performs the force calculations for the left pad 
+
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a96a68a95a775f15d93bfa6ffe36ff5a3}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!left\-\_\-rivet\-\_\-detector@{left\-\_\-rivet\-\_\-detector}}
+\index{left\-\_\-rivet\-\_\-detector@{left\-\_\-rivet\-\_\-detector}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{left\-\_\-rivet\-\_\-detector}]{\setlength{\rightskip}{0pt plus 5cm}void D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::left\-\_\-rivet\-\_\-detector (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a96a68a95a775f15d93bfa6ffe36ff5a3}
+
+
+left\-\_\-rivet\-\_\-detector -\/ Performs the rivet detection for the left pad 
+
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a974bdbaca3c74f44fb9578a2495e5434}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!left\-\_\-scan@{left\-\_\-scan}}
+\index{left\-\_\-scan@{left\-\_\-scan}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{left\-\_\-scan}]{\setlength{\rightskip}{0pt plus 5cm}void D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::left\-\_\-scan (
+\begin{DoxyParamCaption}
+\item[{const std\-\_\-msgs\-::\-Int8\-Multi\-Array\-Const\-Ptr \&}]{input}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a974bdbaca3c74f44fb9578a2495e5434}
+
+
+left\-\_\-scan -\/ Gets the reading from the left Mbed and decompresses the reading 
+
+
+\begin{DoxyParams}{Parameters}
+{\em input} & -\/ Pushed through rosserial \\
+\hline
+\end{DoxyParams}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a197f1deb0b828a7d8ead5628732f7eb4}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!right\-\_\-reader@{right\-\_\-reader}}
+\index{right\-\_\-reader@{right\-\_\-reader}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{right\-\_\-reader}]{\setlength{\rightskip}{0pt plus 5cm}void D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::right\-\_\-reader (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a197f1deb0b828a7d8ead5628732f7eb4}
+
+
+right\-\_\-reader -\/ performs the force calculations for the right pad 
+
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_ae4ed92ca1fcf52b543b15022b9669723}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!right\-\_\-rivet\-\_\-detector@{right\-\_\-rivet\-\_\-detector}}
+\index{right\-\_\-rivet\-\_\-detector@{right\-\_\-rivet\-\_\-detector}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{right\-\_\-rivet\-\_\-detector}]{\setlength{\rightskip}{0pt plus 5cm}void D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::right\-\_\-rivet\-\_\-detector (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_ae4ed92ca1fcf52b543b15022b9669723}
+
+
+right\-\_\-rivet\-\_\-detector -\/ Performs the rivet detection for the right pad 
+
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a9409df1493e7a1b2841466304611d361}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!right\-\_\-scan@{right\-\_\-scan}}
+\index{right\-\_\-scan@{right\-\_\-scan}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{right\-\_\-scan}]{\setlength{\rightskip}{0pt plus 5cm}void D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::right\-\_\-scan (
+\begin{DoxyParamCaption}
+\item[{const std\-\_\-msgs\-::\-Int8\-Multi\-Array\-Const\-Ptr \&}]{input}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a9409df1493e7a1b2841466304611d361}
+
+
+right\-\_\-scan -\/ Gets the reading from the right Mbed and decompresses the reading 
+
+
+\begin{DoxyParams}{Parameters}
+{\em input} & -\/ Pushed through rosserial \\
+\hline
+\end{DoxyParams}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a0ec0e540c96a4ca08f1525ed85785964}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!wake\-\_\-con@{wake\-\_\-con}}
+\index{wake\-\_\-con@{wake\-\_\-con}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{wake\-\_\-con}]{\setlength{\rightskip}{0pt plus 5cm}void D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::wake\-\_\-con (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a0ec0e540c96a4ca08f1525ed85785964}
+
+
+wake\-\_\-con -\/ forcefully wakes up all the conditional variables 
+
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a3c48b98dde806c63dfd8524792127d8e}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!weighted\-\_\-average@{weighted\-\_\-average}}
+\index{weighted\-\_\-average@{weighted\-\_\-average}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{weighted\-\_\-average}]{\setlength{\rightskip}{0pt plus 5cm}cv\-::\-Point2f D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::weighted\-\_\-average (
+\begin{DoxyParamCaption}
+\item[{cv\-::\-Mat \&}]{resize, }
+\item[{cv\-::\-Point2f \&}]{centre, }
+\item[{double}]{diameter}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a3c48b98dde806c63dfd8524792127d8e}
+
+
+weighted\-\_\-average -\/ Takes the output from the blob detection and uses that as a starting point to refine the position of the rivet 
+
+
+\begin{DoxyParams}{Parameters}
+{\em resize} & -\/ Larger image \\
+\hline
+{\em centre} & -\/ Blob detected centre of the rivet \\
+\hline
+{\em diameter} & -\/ Circle containing the rivet \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+-\/ New centre point, containing the refined position of the rivet 
+\end{DoxyReturn}
+
+
+\subsection{Member Data Documentation}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a58ccbfc79c1a69cc6947ad3dca223b56}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!buf@{buf}}
+\index{buf@{buf}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{buf}]{\setlength{\rightskip}{0pt plus 5cm}{\bf buffer} D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::buf\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a58ccbfc79c1a69cc6947ad3dca223b56}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a22a44231bf30be0dcc70e69997060229}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!buf\-\_\-per\-\_\-cell@{buf\-\_\-per\-\_\-cell}}
+\index{buf\-\_\-per\-\_\-cell@{buf\-\_\-per\-\_\-cell}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{buf\-\_\-per\-\_\-cell}]{\setlength{\rightskip}{0pt plus 5cm}std\-::vector$<$ std\-::vector$<$double$>$ $>$ D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::buf\-\_\-per\-\_\-cell\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a22a44231bf30be0dcc70e69997060229}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_af32f59832855fe170d0648df9a796ab7}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!con@{con}}
+\index{con@{con}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{con}]{\setlength{\rightskip}{0pt plus 5cm}std\-::condition\-\_\-variable D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::con\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_af32f59832855fe170d0648df9a796ab7}
+
+
+Wakes the left forces calculating thread. 
+
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a2c0c696518b5fabce9e67bad1ba0575b}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!con\-\_\-left\-\_\-image@{con\-\_\-left\-\_\-image}}
+\index{con\-\_\-left\-\_\-image@{con\-\_\-left\-\_\-image}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{con\-\_\-left\-\_\-image}]{\setlength{\rightskip}{0pt plus 5cm}std\-::condition\-\_\-variable D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::con\-\_\-left\-\_\-image\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a2c0c696518b5fabce9e67bad1ba0575b}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a04c8c6987f5a9d3b1a8be8d79f1e4ead}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!con\-\_\-r@{con\-\_\-r}}
+\index{con\-\_\-r@{con\-\_\-r}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{con\-\_\-r}]{\setlength{\rightskip}{0pt plus 5cm}std\-::condition\-\_\-variable D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::con\-\_\-r\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a04c8c6987f5a9d3b1a8be8d79f1e4ead}
+
+
+Wakes the right force calculating thread. 
+
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a291f014d7ab2626b04f707e7dc2f1b10}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!con\-\_\-right\-\_\-image@{con\-\_\-right\-\_\-image}}
+\index{con\-\_\-right\-\_\-image@{con\-\_\-right\-\_\-image}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{con\-\_\-right\-\_\-image}]{\setlength{\rightskip}{0pt plus 5cm}std\-::condition\-\_\-variable D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::con\-\_\-right\-\_\-image\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a291f014d7ab2626b04f707e7dc2f1b10}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a2ebd76248d2f3b00ba748df990aee2e9}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!forces\-\_\-left@{forces\-\_\-left}}
+\index{forces\-\_\-left@{forces\-\_\-left}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{forces\-\_\-left}]{\setlength{\rightskip}{0pt plus 5cm}std\-::vector$<$double$>$ D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::forces\-\_\-left\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a2ebd76248d2f3b00ba748df990aee2e9}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_accfe1081e8158a1f9e14c9b9a5603fa0}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!forces\-\_\-right@{forces\-\_\-right}}
+\index{forces\-\_\-right@{forces\-\_\-right}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{forces\-\_\-right}]{\setlength{\rightskip}{0pt plus 5cm}std\-::vector$<$double$>$ D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::forces\-\_\-right\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_accfe1081e8158a1f9e14c9b9a5603fa0}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_aa2f14d52d18801d9477045b36c3a2b4c}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!img\-\_\-buf@{img\-\_\-buf}}
+\index{img\-\_\-buf@{img\-\_\-buf}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{img\-\_\-buf}]{\setlength{\rightskip}{0pt plus 5cm}{\bf image\-\_\-buffer} D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::img\-\_\-buf\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_aa2f14d52d18801d9477045b36c3a2b4c}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a170670afc3d63870f74dc97eb38ed1ab}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!input\-\_\-scan\-\_\-left\-\_\-@{input\-\_\-scan\-\_\-left\-\_\-}}
+\index{input\-\_\-scan\-\_\-left\-\_\-@{input\-\_\-scan\-\_\-left\-\_\-}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{input\-\_\-scan\-\_\-left\-\_\-}]{\setlength{\rightskip}{0pt plus 5cm}std\-::vector$<$int16\-\_\-t$>$ D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::input\-\_\-scan\-\_\-left\-\_\-\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a170670afc3d63870f74dc97eb38ed1ab}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a8a8f54b17159575afe94a6a19507a04a}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!input\-\_\-scan\-\_\-right\-\_\-@{input\-\_\-scan\-\_\-right\-\_\-}}
+\index{input\-\_\-scan\-\_\-right\-\_\-@{input\-\_\-scan\-\_\-right\-\_\-}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{input\-\_\-scan\-\_\-right\-\_\-}]{\setlength{\rightskip}{0pt plus 5cm}std\-::vector$<$int16\-\_\-t$>$ D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::input\-\_\-scan\-\_\-right\-\_\-\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a8a8f54b17159575afe94a6a19507a04a}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_afb78a3024809463300b5909e1c00aa2f}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!it\-\_\-@{it\-\_\-}}
+\index{it\-\_\-@{it\-\_\-}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{it\-\_\-}]{\setlength{\rightskip}{0pt plus 5cm}image\-\_\-transport\-::\-Image\-Transport D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::it\-\_\-\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_afb78a3024809463300b5909e1c00aa2f}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a0cc04e7a8c2f6d84c3d8791d3a2e8922}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!left\-\_\-a\-Done@{left\-\_\-a\-Done}}
+\index{left\-\_\-a\-Done@{left\-\_\-a\-Done}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{left\-\_\-a\-Done}]{\setlength{\rightskip}{0pt plus 5cm}bool D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::left\-\_\-a\-Done = false\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a0cc04e7a8c2f6d84c3d8791d3a2e8922}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a7651aa3b9e261f73663a72ae58e0a0d8}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!left\-\_\-mx@{left\-\_\-mx}}
+\index{left\-\_\-mx@{left\-\_\-mx}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{left\-\_\-mx}]{\setlength{\rightskip}{0pt plus 5cm}std\-::mutex D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::left\-\_\-mx\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a7651aa3b9e261f73663a72ae58e0a0d8}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_ad02e30134a049358562bbbdbf3fe9431}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!mx\-\_\-left\-\_\-image@{mx\-\_\-left\-\_\-image}}
+\index{mx\-\_\-left\-\_\-image@{mx\-\_\-left\-\_\-image}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{mx\-\_\-left\-\_\-image}]{\setlength{\rightskip}{0pt plus 5cm}std\-::mutex D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::mx\-\_\-left\-\_\-image\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_ad02e30134a049358562bbbdbf3fe9431}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_afb694b6685eb9defa4f7b74b532dfe1f}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!mx\-\_\-right\-\_\-image@{mx\-\_\-right\-\_\-image}}
+\index{mx\-\_\-right\-\_\-image@{mx\-\_\-right\-\_\-image}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{mx\-\_\-right\-\_\-image}]{\setlength{\rightskip}{0pt plus 5cm}std\-::mutex D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::mx\-\_\-right\-\_\-image\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_afb694b6685eb9defa4f7b74b532dfe1f}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a8ed70fff7c216f20ff25facd0fbfeaf6}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!n\-\_\-@{n\-\_\-}}
+\index{n\-\_\-@{n\-\_\-}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{n\-\_\-}]{\setlength{\rightskip}{0pt plus 5cm}ros\-::\-Node\-Handle D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::n\-\_\-\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a8ed70fff7c216f20ff25facd0fbfeaf6}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_adb166bd562b2186a485976147aab8b1d}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!new\-\_\-data\-\_\-left@{new\-\_\-data\-\_\-left}}
+\index{new\-\_\-data\-\_\-left@{new\-\_\-data\-\_\-left}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{new\-\_\-data\-\_\-left}]{\setlength{\rightskip}{0pt plus 5cm}bool D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::new\-\_\-data\-\_\-left = false\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_adb166bd562b2186a485976147aab8b1d}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a3a5164ed608e08edc80d29595d0db2a0}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!new\-\_\-data\-\_\-right@{new\-\_\-data\-\_\-right}}
+\index{new\-\_\-data\-\_\-right@{new\-\_\-data\-\_\-right}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{new\-\_\-data\-\_\-right}]{\setlength{\rightskip}{0pt plus 5cm}bool D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::new\-\_\-data\-\_\-right = false\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a3a5164ed608e08edc80d29595d0db2a0}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a965756ee113264c19b5e409a3c0b28bd}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!new\-\_\-image\-\_\-left@{new\-\_\-image\-\_\-left}}
+\index{new\-\_\-image\-\_\-left@{new\-\_\-image\-\_\-left}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{new\-\_\-image\-\_\-left}]{\setlength{\rightskip}{0pt plus 5cm}bool D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::new\-\_\-image\-\_\-left = false\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a965756ee113264c19b5e409a3c0b28bd}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a207d9f29b337fec4909dbaf8fced8d5d}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!new\-\_\-image\-\_\-right@{new\-\_\-image\-\_\-right}}
+\index{new\-\_\-image\-\_\-right@{new\-\_\-image\-\_\-right}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{new\-\_\-image\-\_\-right}]{\setlength{\rightskip}{0pt plus 5cm}bool D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::new\-\_\-image\-\_\-right = false\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a207d9f29b337fec4909dbaf8fced8d5d}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a30cbd1fd3ec1f2a2fcc8b3f33dd34ad1}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!params@{params}}
+\index{params@{params}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{params}]{\setlength{\rightskip}{0pt plus 5cm}cv\-::\-Simple\-Blob\-Detector\-::\-Params D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::params\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a30cbd1fd3ec1f2a2fcc8b3f33dd34ad1}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a105ecd49becc435a09962b745617c4a8}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!pub@{pub}}
+\index{pub@{pub}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{pub}]{\setlength{\rightskip}{0pt plus 5cm}image\-\_\-transport\-::\-Publisher D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::pub\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a105ecd49becc435a09962b745617c4a8}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a766c3bb649e0c98548415ed19c229207}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!pub\-\_\-left\-\_\-@{pub\-\_\-left\-\_\-}}
+\index{pub\-\_\-left\-\_\-@{pub\-\_\-left\-\_\-}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{pub\-\_\-left\-\_\-}]{\setlength{\rightskip}{0pt plus 5cm}ros\-::\-Publisher D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::pub\-\_\-left\-\_\-\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a766c3bb649e0c98548415ed19c229207}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_aa40c8497ac3ee01dff392f6568dadc85}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!pub\-\_\-right\-\_\-@{pub\-\_\-right\-\_\-}}
+\index{pub\-\_\-right\-\_\-@{pub\-\_\-right\-\_\-}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{pub\-\_\-right\-\_\-}]{\setlength{\rightskip}{0pt plus 5cm}ros\-::\-Publisher D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::pub\-\_\-right\-\_\-\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_aa40c8497ac3ee01dff392f6568dadc85}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a6ebe4ab2dc19da34d1c2124dd3d3932e}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!right\-\_\-a\-Done@{right\-\_\-a\-Done}}
+\index{right\-\_\-a\-Done@{right\-\_\-a\-Done}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{right\-\_\-a\-Done}]{\setlength{\rightskip}{0pt plus 5cm}bool D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::right\-\_\-a\-Done = false\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a6ebe4ab2dc19da34d1c2124dd3d3932e}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a460f81e181d9cf6bd3e231ccb214ee85}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!right\-\_\-mx@{right\-\_\-mx}}
+\index{right\-\_\-mx@{right\-\_\-mx}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{right\-\_\-mx}]{\setlength{\rightskip}{0pt plus 5cm}std\-::mutex D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::right\-\_\-mx\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a460f81e181d9cf6bd3e231ccb214ee85}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a8e49925bbb0afc939e26af6d72d8af02}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!sub\-\_\-left\-\_\-@{sub\-\_\-left\-\_\-}}
+\index{sub\-\_\-left\-\_\-@{sub\-\_\-left\-\_\-}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{sub\-\_\-left\-\_\-}]{\setlength{\rightskip}{0pt plus 5cm}ros\-::\-Subscriber D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::sub\-\_\-left\-\_\-\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a8e49925bbb0afc939e26af6d72d8af02}
+\hypertarget{class_d_e_c_o_m_p_r_e_s_s_e_r_a09941b5967e1aa1bb182ad155bc5fb46}{\index{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}!sub\-\_\-right\-\_\-@{sub\-\_\-right\-\_\-}}
+\index{sub\-\_\-right\-\_\-@{sub\-\_\-right\-\_\-}!DECOMPRESSER@{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}}
+\subsubsection[{sub\-\_\-right\-\_\-}]{\setlength{\rightskip}{0pt plus 5cm}ros\-::\-Subscriber D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::sub\-\_\-right\-\_\-\hspace{0.3cm}{\ttfamily [private]}}}\label{class_d_e_c_o_m_p_r_e_s_s_e_r_a09941b5967e1aa1bb182ad155bc5fb46}
+
+
+The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+include/pressure\-\_\-pad/\hyperlink{decompresser_8h}{decompresser.\-h}\item 
+src/\hyperlink{decompresser_8cpp}{decompresser.\-cpp}\end{DoxyCompactItemize}

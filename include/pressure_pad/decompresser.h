@@ -105,10 +105,45 @@ private:
     cv::SimpleBlobDetector::Params params;
 
 private:
+    ///
+    /// \brief left_scan - Gets the reading from the left Mbed and decompresses the reading
+    /// \param input - Pushed through rosserial
+    ///
     void left_scan(const std_msgs::Int8MultiArrayConstPtr &input);
+
+    ///
+    /// \brief right_scan - Gets the reading from the right Mbed and decompresses the reading
+    /// \param input - Pushed through rosserial
+    ///
     void right_scan(const std_msgs::Int8MultiArrayConstPtr &input);
 
+    ///
+    /// \brief is_safe - Performs all the necessary checks to detemine if the step is safe or not. This involves looking at the total amount of
+    ///                  rivets and the moments created by them. A flat surface is detected as safe given a certain force
+    /// \param image - image generated from the force values
+    /// \param is_left - true if left image
+    /// \param message - ROS custom message. Certain members will be completed here
+    /// \param slip_read - Object containing the previous readings
+    /// \return (bool) - True if the step is safe, will go false during a slip
+    ///
     bool is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_read &message, slip_detect &slip_read);
+
+    ///
+    /// \brief img_upscale - Increases the resolution of the scan image
+    /// \param small_img - initial image
+    /// \param scale_factor - How much are we scaling by
+    /// \return (Mat) - larger image
+    ///
+    cv::Mat img_upscale(cv::Mat &small_img, unsigned int scale_factor);
+
+    ///
+    /// \brief weighted_average - Takes the output from the blob detection and uses that as a starting point to refine the position of the rivet
+    /// \param resize - Larger image
+    /// \param centre - Blob detected centre of the rivet
+    /// \param diameter - Circle containing the rivet
+    /// \return - New centre point, containing the refined position of the rivet
+    ///
+    cv::Point2f weighted_average(cv::Mat &resize, cv::Point2f &centre, double diameter);
 
 private:
     DECOMPRESSER();
@@ -116,11 +151,31 @@ private:
 public:
     DECOMPRESSER(ros::NodeHandle &n);
 
+    // The following each run in a seperate thread
+
+    ///
+    /// \brief wake_con - forcefully wakes up all the conditional variables
+    ///
     void wake_con();
+
+    ///
+    /// \brief left_reader - performs the force calculations for the left pad
+    ///
     void left_reader();
+
+    ///
+    /// \brief right_reader - performs the force calculations for the right pad
+    ///
     void right_reader();
 
+    ///
+    /// \brief left_rivet_detector - Performs the rivet detection for the left pad
+    ///
     void left_rivet_detector();
+
+    ///
+    /// \brief right_rivet_detector - Performs the rivet detection for the right pad
+    ///
     void right_rivet_detector();
 };
 

@@ -1,0 +1,110 @@
+\hypertarget{classslip__detect}{\section{slip\-\_\-detect Class Reference}
+\label{classslip__detect}\index{slip\-\_\-detect@{slip\-\_\-detect}}
+}
+
+
+{\ttfamily \#include $<$slip\-\_\-detect.\-h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classslip__detect_a866b11a21593cef090d147946f7a5f39}{slip\-\_\-detect} ()
+\item 
+void \hyperlink{classslip__detect_ae6e6e443b198e92fa399d77353efc5c3}{push\-\_\-points} (std\-::vector$<$ cv\-::\-Point2f $>$ points)
+\begin{DoxyCompactList}\small\item\em push\-\_\-points -\/ pushes in the detected rivet positions \end{DoxyCompactList}\item 
+bool \hyperlink{classslip__detect_a678335a2cce7af89c9f04c2b958b6c0a}{has\-\_\-slipped} ()
+\begin{DoxyCompactList}\small\item\em has\-\_\-slipped -\/ checks if the position of the rivets has moved. \end{DoxyCompactList}\item 
+int \hyperlink{classslip__detect_ae6b88ed6c11f2d4a028d591885f8991e}{saved\-\_\-points} ()
+\begin{DoxyCompactList}\small\item\em saved\-\_\-points -\/ returns the total amount of readings in pt\-\_\-buf \end{DoxyCompactList}\item 
+void \hyperlink{classslip__detect_a9b082bab66a5314fea7e40c8ca7dda0b}{force\-\_\-clear} ()
+\begin{DoxyCompactList}\small\item\em force\-\_\-clear -\/ forcefully clears pt\-\_\-buf \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\-::vector$<$ std\-::vector\\*
+$<$ cv\-::\-Point2f $>$ $>$ \hyperlink{classslip__detect_ae868f7939dc3d14aaa8341a045bb48fc}{pt\-\_\-buf}
+\begin{DoxyCompactList}\small\item\em Contains the detected rivet positions. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classslip__detect_a866b11a21593cef090d147946f7a5f39}{\index{slip\-\_\-detect@{slip\-\_\-detect}!slip\-\_\-detect@{slip\-\_\-detect}}
+\index{slip\-\_\-detect@{slip\-\_\-detect}!slip_detect@{slip\-\_\-detect}}
+\subsubsection[{slip\-\_\-detect}]{\setlength{\rightskip}{0pt plus 5cm}slip\-\_\-detect\-::slip\-\_\-detect (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classslip__detect_a866b11a21593cef090d147946f7a5f39}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{classslip__detect_a9b082bab66a5314fea7e40c8ca7dda0b}{\index{slip\-\_\-detect@{slip\-\_\-detect}!force\-\_\-clear@{force\-\_\-clear}}
+\index{force\-\_\-clear@{force\-\_\-clear}!slip_detect@{slip\-\_\-detect}}
+\subsubsection[{force\-\_\-clear}]{\setlength{\rightskip}{0pt plus 5cm}void slip\-\_\-detect\-::force\-\_\-clear (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classslip__detect_a9b082bab66a5314fea7e40c8ca7dda0b}
+
+
+force\-\_\-clear -\/ forcefully clears pt\-\_\-buf 
+
+\hypertarget{classslip__detect_a678335a2cce7af89c9f04c2b958b6c0a}{\index{slip\-\_\-detect@{slip\-\_\-detect}!has\-\_\-slipped@{has\-\_\-slipped}}
+\index{has\-\_\-slipped@{has\-\_\-slipped}!slip_detect@{slip\-\_\-detect}}
+\subsubsection[{has\-\_\-slipped}]{\setlength{\rightskip}{0pt plus 5cm}bool slip\-\_\-detect\-::has\-\_\-slipped (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classslip__detect_a678335a2cce7af89c9f04c2b958b6c0a}
+
+
+has\-\_\-slipped -\/ checks if the position of the rivets has moved. 
+
+\begin{DoxyReturn}{Returns}
+(bool) -\/ True if a slip has occured 
+\end{DoxyReturn}
+\hypertarget{classslip__detect_ae6e6e443b198e92fa399d77353efc5c3}{\index{slip\-\_\-detect@{slip\-\_\-detect}!push\-\_\-points@{push\-\_\-points}}
+\index{push\-\_\-points@{push\-\_\-points}!slip_detect@{slip\-\_\-detect}}
+\subsubsection[{push\-\_\-points}]{\setlength{\rightskip}{0pt plus 5cm}void slip\-\_\-detect\-::push\-\_\-points (
+\begin{DoxyParamCaption}
+\item[{std\-::vector$<$ cv\-::\-Point2f $>$}]{points}
+\end{DoxyParamCaption}
+)}}\label{classslip__detect_ae6e6e443b198e92fa399d77353efc5c3}
+
+
+push\-\_\-points -\/ pushes in the detected rivet positions 
+
+
+\begin{DoxyParams}{Parameters}
+{\em points} & -\/ the xy points \\
+\hline
+\end{DoxyParams}
+\hypertarget{classslip__detect_ae6b88ed6c11f2d4a028d591885f8991e}{\index{slip\-\_\-detect@{slip\-\_\-detect}!saved\-\_\-points@{saved\-\_\-points}}
+\index{saved\-\_\-points@{saved\-\_\-points}!slip_detect@{slip\-\_\-detect}}
+\subsubsection[{saved\-\_\-points}]{\setlength{\rightskip}{0pt plus 5cm}int slip\-\_\-detect\-::saved\-\_\-points (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classslip__detect_ae6b88ed6c11f2d4a028d591885f8991e}
+
+
+saved\-\_\-points -\/ returns the total amount of readings in pt\-\_\-buf 
+
+\begin{DoxyReturn}{Returns}
+(int) 
+\end{DoxyReturn}
+
+
+\subsection{Member Data Documentation}
+\hypertarget{classslip__detect_ae868f7939dc3d14aaa8341a045bb48fc}{\index{slip\-\_\-detect@{slip\-\_\-detect}!pt\-\_\-buf@{pt\-\_\-buf}}
+\index{pt\-\_\-buf@{pt\-\_\-buf}!slip_detect@{slip\-\_\-detect}}
+\subsubsection[{pt\-\_\-buf}]{\setlength{\rightskip}{0pt plus 5cm}std\-::vector$<$std\-::vector$<$cv\-::\-Point2f$>$ $>$ slip\-\_\-detect\-::pt\-\_\-buf\hspace{0.3cm}{\ttfamily [private]}}}\label{classslip__detect_ae868f7939dc3d14aaa8341a045bb48fc}
+
+
+Contains the detected rivet positions. 
+
+
+
+The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+include/pressure\-\_\-pad/\hyperlink{slip__detect_8h}{slip\-\_\-detect.\-h}\item 
+src/\hyperlink{slip__detect_8cpp}{slip\-\_\-detect.\-cpp}\end{DoxyCompactItemize}

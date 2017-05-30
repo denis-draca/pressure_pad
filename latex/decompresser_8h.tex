@@ -1,0 +1,68 @@
+\hypertarget{decompresser_8h}{\section{include/pressure\-\_\-pad/decompresser.h File Reference}
+\label{decompresser_8h}\index{include/pressure\-\_\-pad/decompresser.\-h@{include/pressure\-\_\-pad/decompresser.\-h}}
+}
+{\ttfamily \#include \char`\"{}ros/ros.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}sensor\-\_\-msgs/\-Image.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}std\-\_\-msgs/\-Int8\-Multi\-Array.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}opencv2/imgproc/imgproc.\-hpp\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}opencv2/highgui/highgui.\-hpp\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}opencv2/opencv.\-hpp\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}image\-\_\-transport/image\-\_\-transport.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}cv\-\_\-bridge/cv\-\_\-bridge.\-h\char`\"{}}\\*
+{\ttfamily \#include $<$chrono$>$}\\*
+{\ttfamily \#include $<$fstream$>$}\\*
+{\ttfamily \#include $<$iomanip$>$}\\*
+{\ttfamily \#include $<$condition\-\_\-variable$>$}\\*
+{\ttfamily \#include $<$pressure\-\_\-pad/pressure\-\_\-read.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}pressure\-\_\-pad/force\-\_\-generator.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}pressure\-\_\-pad/slip\-\_\-detect.\-h\char`\"{}}\\*
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{class_d_e_c_o_m_p_r_e_s_s_e_r}{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R}
+\item 
+struct \hyperlink{struct_d_e_c_o_m_p_r_e_s_s_e_r_1_1image__buffer}{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::image\-\_\-buffer}
+\item 
+struct \hyperlink{struct_d_e_c_o_m_p_r_e_s_s_e_r_1_1buffer}{D\-E\-C\-O\-M\-P\-R\-E\-S\-S\-E\-R\-::buffer}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{decompresser_8h_aa388fa53d415c4fa644383458fe67bd9}{D\-E\-F\-I\-N\-E\-D\-\_\-\-F\-O\-R\-C\-E}~1300
+\item 
+\#define \hyperlink{decompresser_8h_a608b6e986da0782b6d836ed7ad4938b5}{D\-E\-F\-I\-N\-E\-D\-\_\-\-M\-O\-M\-E\-N\-T}~300
+\item 
+\#define \hyperlink{decompresser_8h_a760d3ee66cbf5de7cbac29c8f729121b}{X\-\_\-\-R\-A\-T\-I\-O}~6.\-5/1000
+\item 
+\#define \hyperlink{decompresser_8h_af9c390a8ab5f7fd0a92e27220786bd9a}{Y\-\_\-\-R\-A\-T\-I\-O}~5.\-75/1000
+\item 
+\#define \hyperlink{decompresser_8h_a83ee24f2d20d14e668f8ae5fb895f0fe}{H\-I\-G\-H\-\_\-\-T\-H\-R\-E\-S\-H}~130
+\item 
+\#define \hyperlink{decompresser_8h_abdf07fc99eaa7e95458f11880396239e}{L\-O\-W\-\_\-\-T\-H\-R\-E\-S\-H}~6
+\item 
+\#define \hyperlink{decompresser_8h_ac646a9577d5e480a39939aac8e853d77}{B\-U\-F\-\_\-\-C\-O\-U\-N\-T}~40
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\hypertarget{decompresser_8h_ac646a9577d5e480a39939aac8e853d77}{\index{decompresser.\-h@{decompresser.\-h}!B\-U\-F\-\_\-\-C\-O\-U\-N\-T@{B\-U\-F\-\_\-\-C\-O\-U\-N\-T}}
+\index{B\-U\-F\-\_\-\-C\-O\-U\-N\-T@{B\-U\-F\-\_\-\-C\-O\-U\-N\-T}!decompresser.h@{decompresser.\-h}}
+\subsubsection[{B\-U\-F\-\_\-\-C\-O\-U\-N\-T}]{\setlength{\rightskip}{0pt plus 5cm}\#define B\-U\-F\-\_\-\-C\-O\-U\-N\-T~40}}\label{decompresser_8h_ac646a9577d5e480a39939aac8e853d77}
+\hypertarget{decompresser_8h_aa388fa53d415c4fa644383458fe67bd9}{\index{decompresser.\-h@{decompresser.\-h}!D\-E\-F\-I\-N\-E\-D\-\_\-\-F\-O\-R\-C\-E@{D\-E\-F\-I\-N\-E\-D\-\_\-\-F\-O\-R\-C\-E}}
+\index{D\-E\-F\-I\-N\-E\-D\-\_\-\-F\-O\-R\-C\-E@{D\-E\-F\-I\-N\-E\-D\-\_\-\-F\-O\-R\-C\-E}!decompresser.h@{decompresser.\-h}}
+\subsubsection[{D\-E\-F\-I\-N\-E\-D\-\_\-\-F\-O\-R\-C\-E}]{\setlength{\rightskip}{0pt plus 5cm}\#define D\-E\-F\-I\-N\-E\-D\-\_\-\-F\-O\-R\-C\-E~1300}}\label{decompresser_8h_aa388fa53d415c4fa644383458fe67bd9}
+\hypertarget{decompresser_8h_a608b6e986da0782b6d836ed7ad4938b5}{\index{decompresser.\-h@{decompresser.\-h}!D\-E\-F\-I\-N\-E\-D\-\_\-\-M\-O\-M\-E\-N\-T@{D\-E\-F\-I\-N\-E\-D\-\_\-\-M\-O\-M\-E\-N\-T}}
+\index{D\-E\-F\-I\-N\-E\-D\-\_\-\-M\-O\-M\-E\-N\-T@{D\-E\-F\-I\-N\-E\-D\-\_\-\-M\-O\-M\-E\-N\-T}!decompresser.h@{decompresser.\-h}}
+\subsubsection[{D\-E\-F\-I\-N\-E\-D\-\_\-\-M\-O\-M\-E\-N\-T}]{\setlength{\rightskip}{0pt plus 5cm}\#define D\-E\-F\-I\-N\-E\-D\-\_\-\-M\-O\-M\-E\-N\-T~300}}\label{decompresser_8h_a608b6e986da0782b6d836ed7ad4938b5}
+\hypertarget{decompresser_8h_a83ee24f2d20d14e668f8ae5fb895f0fe}{\index{decompresser.\-h@{decompresser.\-h}!H\-I\-G\-H\-\_\-\-T\-H\-R\-E\-S\-H@{H\-I\-G\-H\-\_\-\-T\-H\-R\-E\-S\-H}}
+\index{H\-I\-G\-H\-\_\-\-T\-H\-R\-E\-S\-H@{H\-I\-G\-H\-\_\-\-T\-H\-R\-E\-S\-H}!decompresser.h@{decompresser.\-h}}
+\subsubsection[{H\-I\-G\-H\-\_\-\-T\-H\-R\-E\-S\-H}]{\setlength{\rightskip}{0pt plus 5cm}\#define H\-I\-G\-H\-\_\-\-T\-H\-R\-E\-S\-H~130}}\label{decompresser_8h_a83ee24f2d20d14e668f8ae5fb895f0fe}
+\hypertarget{decompresser_8h_abdf07fc99eaa7e95458f11880396239e}{\index{decompresser.\-h@{decompresser.\-h}!L\-O\-W\-\_\-\-T\-H\-R\-E\-S\-H@{L\-O\-W\-\_\-\-T\-H\-R\-E\-S\-H}}
+\index{L\-O\-W\-\_\-\-T\-H\-R\-E\-S\-H@{L\-O\-W\-\_\-\-T\-H\-R\-E\-S\-H}!decompresser.h@{decompresser.\-h}}
+\subsubsection[{L\-O\-W\-\_\-\-T\-H\-R\-E\-S\-H}]{\setlength{\rightskip}{0pt plus 5cm}\#define L\-O\-W\-\_\-\-T\-H\-R\-E\-S\-H~6}}\label{decompresser_8h_abdf07fc99eaa7e95458f11880396239e}
+\hypertarget{decompresser_8h_a760d3ee66cbf5de7cbac29c8f729121b}{\index{decompresser.\-h@{decompresser.\-h}!X\-\_\-\-R\-A\-T\-I\-O@{X\-\_\-\-R\-A\-T\-I\-O}}
+\index{X\-\_\-\-R\-A\-T\-I\-O@{X\-\_\-\-R\-A\-T\-I\-O}!decompresser.h@{decompresser.\-h}}
+\subsubsection[{X\-\_\-\-R\-A\-T\-I\-O}]{\setlength{\rightskip}{0pt plus 5cm}\#define X\-\_\-\-R\-A\-T\-I\-O~6.\-5/1000}}\label{decompresser_8h_a760d3ee66cbf5de7cbac29c8f729121b}
+\hypertarget{decompresser_8h_af9c390a8ab5f7fd0a92e27220786bd9a}{\index{decompresser.\-h@{decompresser.\-h}!Y\-\_\-\-R\-A\-T\-I\-O@{Y\-\_\-\-R\-A\-T\-I\-O}}
+\index{Y\-\_\-\-R\-A\-T\-I\-O@{Y\-\_\-\-R\-A\-T\-I\-O}!decompresser.h@{decompresser.\-h}}
+\subsubsection[{Y\-\_\-\-R\-A\-T\-I\-O}]{\setlength{\rightskip}{0pt plus 5cm}\#define Y\-\_\-\-R\-A\-T\-I\-O~5.\-75/1000}}\label{decompresser_8h_af9c390a8ab5f7fd0a92e27220786bd9a}
