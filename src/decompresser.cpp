@@ -9,12 +9,10 @@
  */
 
 DECOMPRESSER::DECOMPRESSER(ros::NodeHandle &n):
-    n_(n), it_(n)
+    n_(n)
 {
     pub_left_ = n_.advertise<pressure_pad::pressure_read>("/wallpusher/reading/left",1);
     pub_right_= n_.advertise<pressure_pad::pressure_read>("/wallpusher/reading/right",1);
-
-    pub = it_.advertise("camera/image", 1);
 
     sub_left_ = n_.subscribe("/wallpusher/raw_scan/left", 1, &DECOMPRESSER::left_scan, this);
     sub_right_= n_.subscribe("/wallpusher/raw_scan/right", 1, &DECOMPRESSER::right_scan, this);
@@ -502,23 +500,23 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
 
     cv::cvtColor(resize, img_rgb, CV_GRAY2RGB);
 
-    for(int i = 0; i < keypoints.size(); i++)
-    {
-        cv::KeyPoint pt = keypoints.at(i);
+//    for(int i = 0; i < keypoints.size(); i++)
+//    {
+//        cv::KeyPoint pt = keypoints.at(i);
 
-        if(pt.size < 30)
-            cv::circle(img_rgb, weighted_average(resize, pt.pt, pt.size), 10, cv::Scalar(0,0,255));
-        else
-            cv::circle(img_rgb, weighted_average(resize, pt.pt, pt.size), 10, cv::Scalar(0,255,0));
-    }
+//        if(pt.size < 30)
+//            cv::circle(img_rgb, weighted_average(resize, pt.pt, pt.size), 10, cv::Scalar(0,0,255));
+//        else
+//            cv::circle(img_rgb, weighted_average(resize, pt.pt, pt.size), 10, cv::Scalar(0,255,0));
+//    }
 
-    cv::namedWindow("resize", cv::WINDOW_NORMAL);
-    cv::imshow("resize", img_rgb);
+//    cv::namedWindow("resize", cv::WINDOW_NORMAL);
+//    cv::imshow("resize", img_rgb);
 
-    cv::namedWindow("thresh", cv::WINDOW_NORMAL);
-    cv::imshow("thresh", img_thresh);
+//    cv::namedWindow("thresh", cv::WINDOW_NORMAL);
+//    cv::imshow("thresh", img_thresh);
 
-    cv::waitKey(3);
+//    cv::waitKey(3);
 
     int z = 0;
 
@@ -547,18 +545,6 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
 
     if(z >= HIGH_THRESH || z <= LOW_THRESH)
     {
-//        double force;
-
-//        while(forces_left.size() == 0 && is_left)
-//        {
-//            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-//        }
-
-//        while(forces_right.size() == 0 && !is_left)
-//        {
-//            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-//        }
-
         if(is_left)
         {
             force = forces_left.back();
@@ -586,27 +572,6 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
     }
     else
     {
-//        return true;
-//        cv::SimpleBlobDetector detector(params);
-
-//        cv::Mat binary_image;
-//        cv::Mat im_with_keypoints(32,16,CV_8UC3,cv::Scalar(0,0,0));
-//        cv::threshold(blur, binary_image, 10, 255, cv::THRESH_BINARY);
-
-//        std::vector<cv::KeyPoint> keypoints;
-
-//        detector.detect( binary_image, keypoints);
-
-//        double force;
-//        while(forces_left.size() == 0 && is_left)
-//        {
-//            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-//        }
-
-//        while(forces_right.size() == 0 && !is_left)
-//        {
-//            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-//        }
 
         if(is_left)
         {

@@ -34,20 +34,24 @@
 #define BUF_COUNT       40          //How many readings are stored before a slip detection is performed. The slower the expected slip the higher
                                     //this number needs to be
 
+///
+/// \brief The DECOMPRESSER class - Performs all the communication with the mbeds connected to the pressure pads. It does the necessary decompressions
+///                                 ,custom message building and generates all the forces and rivet positons.
+///
 class DECOMPRESSER
 {
 private:
     //Buffer Definitions
     struct image_buffer
     {
-        std::vector<cv::Mat> left_images;
-        std::vector<cv::Mat> right_images;
+        std::vector<cv::Mat> left_images; //!< left image reading
+        std::vector<cv::Mat> right_images; //!< Right image reading
     };
 
     struct buffer
     {
-        std::vector < std::vector<uchar> > left_readings;
-        std::vector < std::vector<uchar> > right_readings;
+        std::vector < std::vector<uchar> > left_readings; //!< left raw reading reading
+        std::vector < std::vector<uchar> > right_readings;//!< Right raw reading
     };
 
     std::vector< std::vector<double> > buf_per_cell;
@@ -70,16 +74,14 @@ private:
     ros::NodeHandle n_;
 
     //Publishers
-    ros::Publisher pub_left_;
-    ros::Publisher pub_right_;
+    ros::Publisher pub_left_; //!< Publishers the results relating to the left pressure pad
+    ros::Publisher pub_right_; //!< Publishers the results relating to the Right pressure pad
 
     image_transport::Publisher pub;
 
-    image_transport::ImageTransport it_;
-
     //Subscribers
-    ros::Subscriber sub_left_;
-    ros::Subscriber sub_right_;
+    ros::Subscriber sub_left_; //!< Reads the left pressure pad
+    ros::Subscriber sub_right_;//!< Reads the right pressure pad
 
     //Vectors
     std::vector<int16_t> input_scan_left_;
