@@ -594,8 +594,8 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
             for(int i = 0; i < keypoints.size(); i++)
             {
                 geometry_msgs::Point pt;
-                pt.x = keypoints[i].pt.x /** X_RATIO*/;
-                pt.y = keypoints[i].pt.y /** Y_RATIO*/;
+                pt.x = keypoints[i].pt.x / 20 /** X_RATIO*/;
+                pt.y = keypoints[i].pt.y / 20 /** Y_RATIO*/;
                 pt.z = 0.0;
 
                 message.rivet_pos.push_back(pt);

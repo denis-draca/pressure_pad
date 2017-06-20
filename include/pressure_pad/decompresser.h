@@ -25,8 +25,8 @@
 #define DEFINED_FORCE   1300        //what counts as a safe force
 #define DEFINED_MOMENT  300         //what counts as a safe moment
 
-#define X_RATIO         6.5/1000    //Convert from pixels to m in the x-direction
-#define Y_RATIO         5.75/1000   //Convert from pixels to m in the y-direction
+#define X_RATIO         (6.5/20)/1000    //Convert from pixels to m in the x-direction
+#define Y_RATIO         (5.75/20)/1000   //Convert from pixels to m in the y-direction
 
 #define HIGH_THRESH     130         //Pixel count higher than this counts as a flat surface
 #define LOW_THRESH      6           //Pixel count lower than this counts as a flat surface
