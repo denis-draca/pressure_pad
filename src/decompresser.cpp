@@ -307,7 +307,7 @@ void DECOMPRESSER::left_reader()
         img_buf.left_images.push_back(image);
         forces_left.push_back(force);
         new_image_left = true;
-        buf_per_cell.push_back(force_per_cell);
+//        buf_per_cell.push_back(force_per_cell);
 
         mx_left_image.unlock();
 
@@ -400,12 +400,6 @@ void DECOMPRESSER::left_rivet_detector()
         {
             continue;
         }
-
-
-        for(int i = 0; i < buf_per_cell.back().size(); i++)
-        {
-            left_read.force_per_cell.push_back(buf_per_cell.back().at(i));
-        }
         buf_per_cell.clear();
 
         lk.unlock();
@@ -424,7 +418,7 @@ void DECOMPRESSER::left_rivet_detector()
 
 
         left_read.rivet_pos.clear();
-        left_read.force_per_cell.clear();
+//        left_read.force_per_cell.clear();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -538,22 +532,34 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
+    if(is_left)
+    {
+        mx_left_image.lock();
+        force = forces_left.back();
+
+        forces_left.clear();
+
+        mx_left_image.unlock();
+
+    }
+
     while(forces_right.size() == 0 && !is_left)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
+    if(!is_left)
+    {
+        mx_right_image.lock();
+        force = forces_right.back();
+
+        forces_right.clear();
+
+        mx_right_image.unlock();
+    }
+
     if(z >= HIGH_THRESH || z <= LOW_THRESH)
     {
-        if(is_left)
-        {
-            force = forces_left.back();
-        }
-        else
-        {
-            force = forces_right.back();
-        }
-
         if(force <= 1)
         {
             message.has_slipped = false;
@@ -564,24 +570,12 @@ bool DECOMPRESSER::is_safe(cv::Mat &image, bool is_left, pressure_pad::pressure_
         message.rivet_count = 0;
 
         if(force >= DEFINED_FORCE)
-        {
             return true;
-        }
         else
             return false;
     }
     else
     {
-
-        if(is_left)
-        {
-            force = forces_left.back();
-        }
-        else
-        {
-            force = forces_right.back();
-        }
-
         message.pad_force = force;
         message.is_flat = false;
         message.rivet_count = keypoints.size();

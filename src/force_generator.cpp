@@ -10,6 +10,8 @@ force_generator::force_generator()
     }
 
     R = R_temp;
+
+    std::cout << "better thread branch" << std::endl;
 }
 
 double force_generator::pad_force(std::vector<uchar> &reading, bool left, cv::Mat &image, std::vector<double> &force_per_cell)

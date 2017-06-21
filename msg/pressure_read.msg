@@ -9,5 +9,3 @@ uint8 rivet_count
 
 geometry_msgs/Point[] rivet_pos
 
-float32[] force_per_cell
-
