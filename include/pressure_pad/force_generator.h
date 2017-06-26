@@ -6,7 +6,9 @@
 #include <mutex>
 #include <thread>
 #include <opencv2/opencv.hpp>
+#include <map>
 //#include <iostream>
+#include <condition_variable>
 
 #define COLUMNS         16
 #define ROWS            32
@@ -30,6 +32,41 @@ private:
 
     Eigen::MatrixXd R;
 
+    std::vector<std::thread> _thread_container_left;
+    std::vector<std::thread> _thread_container_right;
+
+
+    std::vector < std::vector<double> > aligned_left;
+    std::vector < std::vector<double> > aligned_right;
+    std::vector < std::vector<double> > resistor_map_left;
+    std::vector < std::vector<double> > resistor_map_right;
+
+    int _position_left = 0;
+    int _position_right = 0;
+
+    std::mutex _process_lock_left;
+    std::mutex _process_lock_right;
+
+    bool _left;
+    bool data_left;
+    bool data_right;
+    bool _alive;
+
+    std::condition_variable _con_left;
+    std::condition_variable _con_right;
+
+    std::vector< std::thread::id> _left_id;
+    std::vector< std::thread::id> _right_id;
+
+    Eigen::MatrixXd all_ones;
+
+
+//    std::vector < std::vector<double> > resistor_map;
+
+//    std::vector< std::map<std::thread::id, unsigned int> > _left_ids;
+//    std::vector< std::map<std::thread::id, unsigned int> > _right_ids;
+
+
 private:
     ///
     /// \brief calc_force - This method will generate the force at each cell point. It will also draw an image based on the calcualted forces
@@ -38,7 +75,7 @@ private:
     /// \param force_per_cell - vector containing each of the individual forces. This is done as a single long line of forces
     /// \return (double) - the total force on the footpad
     ///
-    double calc_force(std::vector<std::vector<double> > map, cv::Mat &image, std::vector<double> &force_per_cell);
+    double calc_force(cv::Mat &image, std::vector<double> &force_per_cell);
 
     ///
     /// \brief constant_16by16 - generates a 16x16 matrix containing all the same values
@@ -79,11 +116,14 @@ private:
     ///
     void resistor_convert(Eigen::MatrixXd &all_ones,
                           std::vector<double> &aligned,
-                          std::vector< std::vector<double> > &resistor_map,
-                          bool left, int i);
+                          std::vector< std::vector<double> > &resistor_map, int i);
+
+    void resistor_convert_v2_left();
+    void resistor_convert_v2_right();
 
 public:
-    force_generator();
+    force_generator(bool left);
+    ~force_generator();
 
     ///
     /// \brief pad_force - performs all the neccessary force calculations and conversions
@@ -93,7 +133,7 @@ public:
     /// \param force_per_cell - vector that will be modified with all the raw force readings
     /// \return (double) - total force on the pad
     ///
-    double pad_force(std::vector<uchar> &reading, bool left, cv::Mat &image, std::vector<double> &force_per_cell);
+    double pad_force(std::vector<uchar> &reading, cv::Mat &image, std::vector<double> &force_per_cell);
 };
 
 #endif // FORCE_GENERATOR_H

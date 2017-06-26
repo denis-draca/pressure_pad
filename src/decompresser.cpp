@@ -271,7 +271,7 @@ void DECOMPRESSER::wake_con()
 void DECOMPRESSER::left_reader()
 {
     std::vector<uchar> data;
-    force_generator left_generator;
+    force_generator left_generator(true);
 
     while(ros::ok())
     {
@@ -300,7 +300,7 @@ void DECOMPRESSER::left_reader()
 
         lk.unlock();
 
-        double force = left_generator.pad_force(data, true, image, force_per_cell);
+        double force = left_generator.pad_force(data, image, force_per_cell);
 
         mx_left_image.lock();
 
@@ -324,7 +324,7 @@ void DECOMPRESSER::left_reader()
 void DECOMPRESSER::right_reader()
 {
     std::vector<uchar> data;
-    force_generator right_generator;
+    force_generator right_generator(false);
     std::vector<double> force_per_cell;
 
     while(ros::ok())
@@ -352,7 +352,7 @@ void DECOMPRESSER::right_reader()
 
         lk.unlock();
 
-        double force = right_generator.pad_force(data, false, image, force_per_cell);
+        double force = right_generator.pad_force(data, image, force_per_cell);
 
         mx_right_image.lock();
 

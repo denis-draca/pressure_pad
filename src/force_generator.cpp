@@ -1,6 +1,7 @@
 #include "pressure_pad/force_generator.h"
 
-force_generator::force_generator()
+force_generator::force_generator(bool left):
+    _left(left)
 {
     Eigen::MatrixXd R_temp(COLUMNS,1);
 
@@ -12,38 +13,81 @@ force_generator::force_generator()
     R = R_temp;
 
     std::cout << "better thread branch" << std::endl;
+
+    for(unsigned int i = 0; i < 32; i++)
+    {
+        if(left)
+        {
+            std::thread t(&force_generator::resistor_convert_v2_left, this);
+
+            _left_id.push_back(t.get_id());
+
+            _thread_container_left.push_back(std::move(t));
+        }
+        else
+        {
+            std::thread t(&force_generator::resistor_convert_v2_right, this);
+        }
+
+    }
+
+    all_ones = constant_16by16(1);
+
+    _alive = true;
+
+    resistor_map_left.resize(32);
+    resistor_map_right.resize(32);
 }
-
-double force_generator::pad_force(std::vector<uchar> &reading, bool left, cv::Mat &image, std::vector<double> &force_per_cell)
+double force_generator::pad_force(std::vector<uchar> &reading, cv::Mat &image, std::vector<double> &force_per_cell)
 {
-    std::vector<std::thread> thread_container;
+//    std::vector<std::thread> thread_container;
 
-    Eigen::MatrixXd all_ones = constant_16by16(1);
-
-    std::vector < std::vector<double> > aligned = make_aligned(reading);
-    std::vector < std::vector<double> > resistor_map;
-
-    for(int i = 0; i < aligned.size(); i++)
+    if(_left)
     {
-        std::thread t(&force_generator::resistor_convert, this,
-                      std::ref(all_ones), //list of ones
-                      std::ref(aligned[i]), //row from aligned reading vector of vectors
-                      std::ref(resistor_map), //changed by reference, new multiarray containing the resistor values instead of ADC
-                      left, i); //true if the reading comes from the left pad
-
-        thread_container.push_back(std::move(t));
+        aligned_left = make_aligned(reading);
+        data_left = true;
+    }
+    else
+    {
+        aligned_right = make_aligned(reading);
+        data_right = true;
     }
 
-    for(int i = 0; i < thread_container.size(); i++)
+//    /*std::vector < std::vector<double> > */aligned = make_aligned(reading);
+//    std::vector < std::vector<double> > resistor_map;
+
+
+
+//    for(int i = 0; i < aligned.size(); i++)
+//    {
+//        std::thread t(&force_generator::resistor_convert, this,
+//                      std::ref(all_ones), //list of ones
+//                      std::ref(aligned[i]), //row from aligned reading vector of vectors
+//                      std::ref(resistor_map), //changed by reference, new multiarray containing the resistor values instead of ADC
+//                      left, i); //true if the reading comes from the left pad
+
+//        thread_container.push_back(std::move(t));
+//    }
+
+//    for(int i = 0; i < thread_container.size(); i++)
+//    {
+//        thread_container[i].join();
+//    }
+
+    while(data_left && _left)
     {
-        thread_container[i].join();
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    return calc_force(resistor_map, image, force_per_cell);
+    while(data_right && !_left)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    return calc_force(image, force_per_cell);
 }
 
 void force_generator::resistor_convert(Eigen::MatrixXd &all_ones, std::vector<double> &aligned,
-                                       std::vector< std::vector<double> > &resistor_map, bool left, int i)
+                                       std::vector< std::vector<double> > &resistor_map, int i)
 {
     Eigen::MatrixXd k_values = k_creator(std::ref(all_ones), std::ref(aligned));
 
@@ -54,7 +98,7 @@ void force_generator::resistor_convert(Eigen::MatrixXd &all_ones, std::vector<do
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    if(left)
+    if(_left)
     {
         mx_left.lock();
         resistor_map.push_back(resistor_row(resistors));
@@ -65,6 +109,77 @@ void force_generator::resistor_convert(Eigen::MatrixXd &all_ones, std::vector<do
         mx_right.lock();
         resistor_map.push_back(resistor_row(resistors));
         mx_right.unlock();
+    }
+}
+
+void force_generator::resistor_convert_v2_left()
+{
+    while(_alive)
+    {
+        unsigned int pos = 0;
+        while(!data_left)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+
+        if(!_alive)
+        {
+            break;
+        }
+
+        for(uint i = 0; i < _left_id.size(); i++)
+        {
+            if(_left_id.at(i) == std::this_thread::get_id())
+            {
+                pos = i;
+            }
+        }
+
+        Eigen::MatrixXd k_values = k_creator(std::ref(all_ones), std::ref(aligned_left.at(pos)));
+        Eigen::MatrixXd resistors =  k_values.fullPivLu().solve(R);
+
+        resistor_map_left.at(pos) = resistor_row(resistors);
+
+        if(pos = _left_id.size() - 1)
+        {
+            data_left = false;
+        }
+    }
+
+}
+
+void force_generator::resistor_convert_v2_right()
+{
+    while(_alive)
+    {
+        unsigned int pos = 0;
+        while(!data_right)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+
+        if(!_alive)
+        {
+            break;
+        }
+
+        for(uint i = 0; i < _right_id.size(); i++)
+        {
+            if(_right_id.at(i) == std::this_thread::get_id())
+            {
+                pos = i;
+            }
+        }
+
+        Eigen::MatrixXd k_values = k_creator(std::ref(all_ones), std::ref(aligned_right.at(pos)));
+        Eigen::MatrixXd resistors =  k_values.fullPivLu().solve(R);
+
+        resistor_map_right.at(pos) = resistor_row(resistors);
+
+        if(pos = _right_id.size() - 1)
+        {
+            data_right = false;
+        }
     }
 }
 
@@ -85,8 +200,40 @@ std::vector<std::vector<double> > force_generator::make_aligned(std::vector<ucha
     return aligned;
 }
 
-double force_generator::calc_force(std::vector<std::vector<double> > map, cv::Mat &image, std::vector<double> &force_per_cell)
+force_generator::~force_generator()
 {
+    _alive = false;
+    data_left = true;
+    data_right = true;
+
+    if(_left)
+    {
+        for(int i = 0; i < _thread_container_left.size(); i++)
+        {
+            _thread_container_left.at(i).join();
+        }
+    }
+    else
+    {
+        for(int i = 0; i < _thread_container_right.size(); i++)
+        {
+            _thread_container_right.at(i).join();
+        }
+    }
+
+}
+
+double force_generator::calc_force(cv::Mat &image, std::vector<double> &force_per_cell)
+{
+    std::vector<std::vector<double> > map;
+    if(_left)
+    {
+        map = resistor_map_left;
+    }
+    else
+    {
+        map = resistor_map_right;
+    }
     double force = 0;
 
     for(int x = 0; x < map.size(); x++)
